@@ -28,12 +28,15 @@ func main() {
 
 	bot.AddHandler(receivedMessage)
 	error := bot.Open()
+	defer bot.Close()
 
 	if error != nil {
 		fmt.Println(error)
 	}
 
 	fmt.Println("Bot Started!")
+	fmt.Println("Bot ShardId", bot.ShardID)
+	fmt.Println("Bot ShardCount", bot.ShardCount)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)

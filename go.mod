@@ -1,4 +1,4 @@
-module github.com/loghinalexandru/resonator-bot
+module github.com/loghinalexandru/resonator
 
 go 1.19
 
