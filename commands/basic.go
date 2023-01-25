@@ -2,19 +2,19 @@ package commands
 
 import "github.com/bwmarrin/discordgo"
 
-var basic = BasicCommand{
+var basic = basicCommand{
 	identifier: "basic",
 }
 
-type BasicCommand struct {
+type basicCommand struct {
 	identifier string
 }
 
-func (BasicCommand) GetID() string {
+func (basicCommand) GetID() string {
 	return basic.identifier
 }
 
-func (BasicCommand) Definition() (result *discordgo.ApplicationCommand) {
+func (basicCommand) Definition() (result *discordgo.ApplicationCommand) {
 	result = new(discordgo.ApplicationCommand)
 	result.Name = basic.identifier
 	result.Description = "Ping!"
@@ -22,7 +22,7 @@ func (BasicCommand) Definition() (result *discordgo.ApplicationCommand) {
 	return
 }
 
-func (BasicCommand) Handler(session *discordgo.Session, interaction *discordgo.InteractionCreate) error {
+func (basicCommand) Handler(session *discordgo.Session, interaction *discordgo.InteractionCreate) error {
 
 	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
