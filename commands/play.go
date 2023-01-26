@@ -1,12 +1,20 @@
 package commands
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"encoding/binary"
+	"fmt"
+	"io"
+	"os"
+	"time"
+
+	"github.com/bwmarrin/discordgo"
+)
 
 type playCommand struct {
 	identifier string
 }
 
-func (cmd playCommand) GetID() string {
+func (cmd playCommand) ID() string {
 	return cmd.identifier
 }
 
@@ -14,6 +22,12 @@ func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 	result := new(discordgo.ApplicationCommand)
 	result.Name = cmd.identifier
 	result.Description = "This command is used to play a sound in the chat!"
+	result.Options = append(result.Options, &discordgo.ApplicationCommandOption{
+		Type:        discordgo.ApplicationCommandOptionString,
+		Name:        "type",
+		Description: "Sound type to be played!",
+		Required:    true,
+	})
 
 	return result
 }
@@ -22,22 +36,76 @@ func (playCommand) Handler(session *discordgo.Session, interaction *discordgo.In
 	channel, _ := session.State.Channel(interaction.ChannelID)
 	guild, _ := session.State.Guild(channel.GuildID)
 
-	for _, voice := range guild.VoiceStates {
-		if interaction.Member.User.ID == voice.UserID {
-			_, error := session.ChannelVoiceJoin(guild.ID, voice.ChannelID, false, true)
-			if error != nil {
-				return error
-			}
-		}
-	}
-
 	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "Pong",
+			Content: "Playing!",
 			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
 
+	for _, voice := range guild.VoiceStates {
+		if interaction.Member.User.ID == voice.UserID {
+			botvc, error := session.ChannelVoiceJoin(guild.ID, voice.ChannelID, false, true)
+
+			if error != nil {
+				return error
+			}
+
+			botvc.Speaking(true)
+
+			path := fmt.Sprintln("misc/", interaction.ApplicationCommandData().Options[0].Value, ".dca")
+			soundError := play(botvc, path)
+
+			if soundError != nil {
+				return soundError
+			}
+
+			botvc.Speaking(false)
+		}
+	}
+
 	return nil
+}
+
+func play(voice *discordgo.VoiceConnection, filePath string) error {
+	file, err := os.Open(filePath)
+
+	if err != nil {
+		fmt.Println("Error opening dca file :", err)
+		return err
+	}
+
+	var opuslen int16
+
+	for {
+		err = binary.Read(file, binary.LittleEndian, &opuslen)
+
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
+			err := file.Close()
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+
+		if err != nil {
+			fmt.Println("Error reading from dca file :", err)
+			return err
+		}
+
+		InBuf := make([]byte, opuslen)
+		err = binary.Read(file, binary.LittleEndian, &InBuf)
+
+		if err != nil {
+			fmt.Println("Error reading from dca file :", err)
+			return err
+		}
+
+		select {
+		case voice.OpusSend <- InBuf:
+		case <-time.After(2 * time.Second):
+			return nil
+		}
+	}
 }

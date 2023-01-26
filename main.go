@@ -28,9 +28,9 @@ func getIntents() discordgo.Intent {
 
 func getHandlers() []interface{} {
 	return []any{
-		handlers.ReceivedMessageHandler,
-		handlers.ReadyHandler,
-		handlers.GetInteractionCreatedHandler(),
+		handlers.MessageCreate,
+		handlers.Ready,
+		handlers.InteractionCreate(),
 	}
 }
 
@@ -56,7 +56,7 @@ func main() {
 		return
 	}
 
-	for _, command := range commands.GetCustomCommands() {
+	for _, command := range commands.Data() {
 		_, commandCreationError := session.ApplicationCommandCreate(session.State.User.ID, "", command.Definition())
 
 		if commandCreationError != nil {
@@ -64,7 +64,7 @@ func main() {
 		}
 	}
 
-	signalTermination := make(chan os.Signal)
+	signalTermination := make(chan os.Signal, 1)
 	signal.Notify(signalTermination, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-signalTermination
 }

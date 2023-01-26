@@ -6,7 +6,7 @@ type basicCommand struct {
 	identifier string
 }
 
-func (cmd basicCommand) GetID() string {
+func (cmd basicCommand) ID() string {
 	return cmd.identifier
 }
 

@@ -14,16 +14,16 @@ var commands = [2]CustomCommandDef{
 }
 
 type CustomCommandDef interface {
-	GetID() string
+	ID() string
 	Definition() *discordgo.ApplicationCommand
 	Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error
 }
 
-func GetCustomCommands() map[string]CustomCommandDef {
+func Data() map[string]CustomCommandDef {
 	var commandsTable = make(map[string]CustomCommandDef)
 
 	for _, cmd := range commands {
-		commandsTable[cmd.GetID()] = cmd
+		commandsTable[cmd.ID()] = cmd
 	}
 
 	return commandsTable
