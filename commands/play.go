@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -70,14 +71,11 @@ func (playCommand) Handler(session *discordgo.Session, interaction *discordgo.In
 
 func play(voice *discordgo.VoiceConnection, filePath string) error {
 	file, err := os.Open(filePath)
-
 	if err != nil {
-		fmt.Println("Error opening dca file :", err)
 		return err
 	}
 
 	var opuslen int16
-
 	for {
 		err = binary.Read(file, binary.LittleEndian, &opuslen)
 
@@ -90,22 +88,20 @@ func play(voice *discordgo.VoiceConnection, filePath string) error {
 		}
 
 		if err != nil {
-			fmt.Println("Error reading from dca file :", err)
 			return err
 		}
 
-		InBuf := make([]byte, opuslen)
-		err = binary.Read(file, binary.LittleEndian, &InBuf)
+		opusFrame := make([]byte, opuslen)
+		err = binary.Read(file, binary.LittleEndian, &opusFrame)
 
 		if err != nil {
-			fmt.Println("Error reading from dca file :", err)
 			return err
 		}
 
 		select {
-		case voice.OpusSend <- InBuf:
+		case voice.OpusSend <- opusFrame:
 		case <-time.After(2 * time.Second):
-			return nil
+			return errors.New("Timeout!")
 		}
 	}
 }
