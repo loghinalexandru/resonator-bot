@@ -13,13 +13,15 @@ func ReadyHandler(session *discordgo.Session, ready *discordgo.Ready) {
 	fmt.Println("Bot ShardCount: ", session.ShardCount)
 }
 
-func InteractionCreatedHandler(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	customCommands := commands.GetCustomCommands()
+func GetInteractionCreatedHandler() func(*discordgo.Session, *discordgo.InteractionCreate) {
+	commands := commands.GetCustomCommands()
 
-	commandError := customCommands[interaction.ApplicationCommandData().Name].Handler(session, interaction)
+	return func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
+		commandError := commands[interaction.ApplicationCommandData().Name].Handler(session, interaction)
 
-	if commandError != nil {
-		fmt.Println(commandError)
+		if commandError != nil {
+			fmt.Println(commandError)
+		}
 	}
 }
 

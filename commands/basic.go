@@ -2,21 +2,17 @@ package commands
 
 import "github.com/bwmarrin/discordgo"
 
-var basic = basicCommand{
-	identifier: "basic",
-}
-
 type basicCommand struct {
 	identifier string
 }
 
-func (basicCommand) GetID() string {
-	return basic.identifier
+func (cmd basicCommand) GetID() string {
+	return cmd.identifier
 }
 
-func (basicCommand) Definition() (result *discordgo.ApplicationCommand) {
+func (cmd basicCommand) Definition() (result *discordgo.ApplicationCommand) {
 	result = new(discordgo.ApplicationCommand)
-	result.Name = basic.identifier
+	result.Name = cmd.identifier
 	result.Description = "Ping!"
 
 	return

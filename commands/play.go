@@ -2,21 +2,17 @@ package commands
 
 import "github.com/bwmarrin/discordgo"
 
-var play = playCommand{
-	identifier: "play",
-}
-
 type playCommand struct {
 	identifier string
 }
 
-func (playCommand) GetID() string {
-	return play.identifier
+func (cmd playCommand) GetID() string {
+	return cmd.identifier
 }
 
-func (playCommand) Definition() *discordgo.ApplicationCommand {
+func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 	result := new(discordgo.ApplicationCommand)
-	result.Name = play.identifier
+	result.Name = cmd.identifier
 	result.Description = "This command is used to play a sound in the chat!"
 
 	return result
@@ -39,6 +35,7 @@ func (playCommand) Handler(session *discordgo.Session, interaction *discordgo.In
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: "Pong",
+			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
 

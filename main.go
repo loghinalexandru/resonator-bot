@@ -30,7 +30,7 @@ func getHandlers() []interface{} {
 	return []any{
 		handlers.ReceivedMessageHandler,
 		handlers.ReadyHandler,
-		handlers.InteractionCreatedHandler,
+		handlers.GetInteractionCreatedHandler(),
 	}
 }
 
