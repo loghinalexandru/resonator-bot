@@ -1,14 +1,8 @@
 package commands
 
 import (
-	"encoding/binary"
-	"errors"
-	"fmt"
-	"io"
-	"os"
-	"time"
-
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/encoder"
 )
 
 type playCommand struct {
@@ -53,55 +47,12 @@ func (playCommand) Handler(session *discordgo.Session, interaction *discordgo.In
 				return error
 			}
 
-			botvc.Speaking(true)
-
-			path := fmt.Sprintln("misc/", interaction.ApplicationCommandData().Options[0].Value, ".dca")
-			soundError := play(botvc, path)
-
-			if soundError != nil {
-				return soundError
-			}
-
-			botvc.Speaking(false)
+			path := "misc/" + interaction.ApplicationCommandData().Options[0].Value.(string) + ".mp3"
+			stop := make(chan bool)
+			encoder.PlayAudioFile(botvc, path, stop)
+			break
 		}
 	}
 
 	return nil
-}
-
-func play(voice *discordgo.VoiceConnection, filePath string) error {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-
-	var opuslen int16
-	for {
-		err = binary.Read(file, binary.LittleEndian, &opuslen)
-
-		if err == io.EOF || err == io.ErrUnexpectedEOF {
-			err := file.Close()
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-
-		if err != nil {
-			return err
-		}
-
-		opusFrame := make([]byte, opuslen)
-		err = binary.Read(file, binary.LittleEndian, &opusFrame)
-
-		if err != nil {
-			return err
-		}
-
-		select {
-		case voice.OpusSend <- opusFrame:
-		case <-time.After(2 * time.Second):
-			return errors.New("Timeout!")
-		}
-	}
 }
