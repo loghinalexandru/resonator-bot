@@ -1,12 +1,15 @@
 package commands
 
 import (
+	"sync"
+
 	"github.com/bwmarrin/discordgo"
 )
 
 var commands = [2]CustomCommandDef{
 	playCommand{
 		identifier: "play",
+		mutex:      new(sync.Mutex),
 	},
 	basicCommand{
 		identifier: "basic",

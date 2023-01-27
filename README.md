@@ -1,3 +1,3 @@
 ## Requiremenets:
 
-- ffmpeg availabe in path
+- DCAV1 encoded sound file in misc
