@@ -6,7 +6,9 @@ import (
 )
 
 func reactCommand() *types.Playback {
-	result := discordgo.ApplicationCommand{}
+	var out types.Playback
+
+	result := out.Definition()
 	result.Name = "react"
 	result.Description = "This command is used to react with a sound in the chat!"
 	result.Options = append(result.Options, &discordgo.ApplicationCommandOption{
@@ -26,11 +28,25 @@ func reactCommand() *types.Playback {
 				Name:  "Yass",
 				Value: "yass.dca",
 			},
+			{
+				Name:  "Bruuh!",
+				Value: "bruh.dca",
+			},
+			{
+				Name:  "Bagmias Pl.",
+				Value: "pl.dca",
+			},
+			{
+				Name:  "To be continued...",
+				Value: "continued.dca",
+			},
+			{
+				Name:  "Directed By Robert B. Weide",
+				Value: "directedby.dca",
+			},
 		},
 		Required: true,
 	})
 
-	return &types.Playback{
-		Def: result,
-	}
+	return &out
 }

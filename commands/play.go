@@ -6,7 +6,9 @@ import (
 )
 
 func playCommand() *types.Playback {
-	result := discordgo.ApplicationCommand{}
+	var out types.Playback
+
+	result := out.Definition()
 	result.Name = "play"
 	result.Description = "This command is used to play a sound in the chat!"
 	result.Options = append(result.Options, &discordgo.ApplicationCommandOption{
@@ -27,20 +29,12 @@ func playCommand() *types.Playback {
 				Value: "yoo.dca",
 			},
 			{
-				Name:  "Bagmias Pl.",
-				Value: "pl.dca",
-			},
-			{
 				Name:  "FBI Open Up",
 				Value: "fbi.dca",
 			},
 			{
 				Name:  "Fa nu mai vomita!",
 				Value: "vomita.dca",
-			},
-			{
-				Name:  "To be continued...",
-				Value: "continued.dca",
 			},
 			{
 				Name:  "Il bag in ma-sa!",
@@ -55,20 +49,12 @@ func playCommand() *types.Playback {
 				Value: "flash.dca",
 			},
 			{
-				Name:  "Bruuh!",
-				Value: "bruh.dca",
-			},
-			{
 				Name:  "Hehe Boy!",
 				Value: "heheboy.dca",
 			},
 			{
 				Name:  "Yamete Kudasai!",
 				Value: "yamete.dca",
-			},
-			{
-				Name:  "Directed By Robert B. Weide",
-				Value: "directedby.dca",
 			},
 			{
 				Name:  "Sarut-mana",
@@ -110,23 +96,9 @@ func playCommand() *types.Playback {
 				Name:  "Death",
 				Value: "death.dca",
 			},
-			{
-				Name:  "Eh?",
-				Value: "eh.dca",
-			},
-			// {
-			// 	Name:  "Alta intrebare.",
-			// 	Value: "intrebare.dca",
-			// },
-			// {
-			// 	Name:  "Yass",
-			// 	Value: "yass.dca",
-			// },
 		},
 		Required: true,
 	})
 
-	return &types.Playback{
-		Def: result,
-	}
+	return &out
 }

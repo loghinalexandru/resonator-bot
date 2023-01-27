@@ -14,11 +14,11 @@ import (
 
 type Playback struct {
 	mtxMap sync.Map
-	Def    discordgo.ApplicationCommand
+	def    discordgo.ApplicationCommand
 }
 
 func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
-	return &cmd.Def
+	return &cmd.def
 }
 
 func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
