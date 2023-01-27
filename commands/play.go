@@ -42,6 +42,42 @@ func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 				Name:  "Yooooo",
 				Value: "yoo.dca",
 			},
+			{
+				Name:  "Bagmias Pl",
+				Value: "pl.dca",
+			},
+			{
+				Name:  "FBI Open Up",
+				Value: "fbi.dca",
+			},
+			{
+				Name:  "Fa nu mai vomita!",
+				Value: "vomita.dca",
+			},
+			{
+				Name:  "To be continued...",
+				Value: "continued.dca",
+			},
+			{
+				Name:  "Il bag in ma-sa!",
+				Value: "baginmasa.dca",
+			},
+			{
+				Name:  "Da? Vrei ceas?",
+				Value: "muienuvrei.dca",
+			},
+			{
+				Name:  "Dau flash!",
+				Value: "flash.dca",
+			},
+			{
+				Name:  "Bruuh!",
+				Value: "bruh.dca",
+			},
+			{
+				Name:  "Hehe Boy!",
+				Value: "heheboy.dca",
+			},
 		},
 		Required: true,
 	})
