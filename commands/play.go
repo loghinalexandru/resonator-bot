@@ -2,6 +2,7 @@ package commands
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"sync"
@@ -13,7 +14,7 @@ import (
 
 type playCommand struct {
 	identifier string
-	mutex      *sync.Mutex
+	mtxMap     *sync.Map
 }
 
 func (cmd playCommand) ID() string {
@@ -28,7 +29,17 @@ func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 		Type:        discordgo.ApplicationCommandOptionString,
 		Name:        "type",
 		Description: "Sound type to be played!",
-		Required:    true,
+		Choices: []*discordgo.ApplicationCommandOptionChoice{
+			{
+				Name:  "Ara-Ara",
+				Value: "ara.dca",
+			},
+			{
+				Name:  "Hai mai repede!",
+				Value: "repede.dca",
+			},
+		},
+		Required: true,
 	})
 
 	return result
@@ -38,7 +49,8 @@ func (cmd playCommand) Handler(sess *discordgo.Session, inter *discordgo.Interac
 	channel, _ := sess.State.Channel(inter.ChannelID)
 	guild, _ := sess.State.Guild(channel.GuildID)
 
-	result := cmd.mutex.TryLock()
+	mtx, _ := cmd.mtxMap.LoadOrStore(guild.ID, &sync.Mutex{})
+	result := mtx.(*sync.Mutex).TryLock()
 
 	if !result {
 		sendResponse(sess, inter, "Please wait your turn!")
@@ -46,7 +58,7 @@ func (cmd playCommand) Handler(sess *discordgo.Session, inter *discordgo.Interac
 	}
 	sendResponse(sess, inter, "Playing!")
 
-	defer cmd.mutex.Unlock()
+	defer mtx.(*sync.Mutex).Unlock()
 
 	for _, voice := range guild.VoiceStates {
 		if inter.Member.User.ID == voice.UserID {
@@ -56,7 +68,7 @@ func (cmd playCommand) Handler(sess *discordgo.Session, inter *discordgo.Interac
 				return err
 			}
 
-			path := "misc/" + inter.ApplicationCommandData().Options[0].Value.(string) + ".dca"
+			path := fmt.Sprintf("misc/%v", inter.ApplicationCommandData().Options[0].Value)
 			err = playSound(sess, botvc, path)
 
 			if err != nil {

@@ -9,7 +9,7 @@ import (
 var commands = [2]CustomCommandDef{
 	playCommand{
 		identifier: "play",
-		mutex:      new(sync.Mutex),
+		mtxMap:     &sync.Map{},
 	},
 	basicCommand{
 		identifier: "basic",
