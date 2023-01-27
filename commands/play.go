@@ -14,14 +14,14 @@ import (
 
 type playCommand struct {
 	identifier string
-	mtxMap     *sync.Map
+	mtxMap     sync.Map
 }
 
 func (cmd playCommand) ID() string {
 	return cmd.identifier
 }
 
-func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
+func (cmd *playCommand) Definition() *discordgo.ApplicationCommand {
 	result := new(discordgo.ApplicationCommand)
 	result.Name = cmd.identifier
 	result.Description = "This command is used to play a sound in the chat!"
@@ -39,11 +39,11 @@ func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 				Value: "repede.dca",
 			},
 			{
-				Name:  "Yooooo",
+				Name:  "Yoooooooouuu",
 				Value: "yoo.dca",
 			},
 			{
-				Name:  "Bagmias Pl",
+				Name:  "Bagmias Pl.",
 				Value: "pl.dca",
 			},
 			{
@@ -95,7 +95,7 @@ func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 				Value: "nogod.dca",
 			},
 			{
-				Name:  "La culcare",
+				Name:  "La culcare!",
 				Value: "laculcare.dca",
 			},
 			{
@@ -114,6 +114,30 @@ func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 				Name:  "Paul, vieni qui.",
 				Value: "sanfranciscu.dca",
 			},
+			{
+				Name:  "Prin puterea zeilor!",
+				Value: "putereazeilor.dca",
+			},
+			{
+				Name:  "Mission failed.",
+				Value: "failed.dca",
+			},
+			{
+				Name:  "Death",
+				Value: "death.dca",
+			},
+			{
+				Name:  "Eh?",
+				Value: "eh.dca",
+			},
+			// {
+			// 	Name:  "Alta intrebare.",
+			// 	Value: "intrebare.dca",
+			// },
+			// {
+			// 	Name:  "Yass",
+			// 	Value: "yass.dca",
+			// },
 		},
 		Required: true,
 	})
@@ -121,7 +145,7 @@ func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 	return result
 }
 
-func (cmd playCommand) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
+func (cmd *playCommand) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
 	channel, _ := sess.State.Channel(inter.ChannelID)
 	guild, _ := sess.State.Guild(channel.GuildID)
 

@@ -7,11 +7,11 @@ import (
 )
 
 var commands = [2]CustomCommandDef{
-	playCommand{
+	&playCommand{
 		identifier: "play",
-		mtxMap:     &sync.Map{},
+		mtxMap:     sync.Map{},
 	},
-	basicCommand{
+	&basicCommand{
 		identifier: "basic",
 	},
 }
