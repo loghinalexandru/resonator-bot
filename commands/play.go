@@ -38,6 +38,10 @@ func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 				Name:  "Hai mai repede!",
 				Value: "repede.dca",
 			},
+			{
+				Name:  "Yooooo",
+				Value: "yoo.dca",
+			},
 		},
 		Required: true,
 	})
