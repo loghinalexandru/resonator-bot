@@ -4,12 +4,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-var commands = [3]CustomCommandDef{
+var commands = []CustomCommandDef{
 	playCommand(),
 	reactCommand(),
-	&basicCommand{
-		identifier: "basic",
-	},
 }
 
 type CustomCommandDef interface {
