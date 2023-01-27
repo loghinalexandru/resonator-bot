@@ -78,6 +78,42 @@ func (cmd playCommand) Definition() *discordgo.ApplicationCommand {
 				Name:  "Hehe Boy!",
 				Value: "heheboy.dca",
 			},
+			{
+				Name:  "Yamete Kudasai!",
+				Value: "yamete.dca",
+			},
+			{
+				Name:  "Directed By Robert B. Weide",
+				Value: "directedby.dca",
+			},
+			{
+				Name:  "Sarut-mana",
+				Value: "sarutmana.dca",
+			},
+			{
+				Name:  "No God Please No!",
+				Value: "nogod.dca",
+			},
+			{
+				Name:  "La culcare",
+				Value: "laculcare.dca",
+			},
+			{
+				Name:  "Da tu cu stomacul ce ai?",
+				Value: "stomacul.dca",
+			},
+			{
+				Name:  "Ma tu carti citesti?",
+				Value: "carticitesti.dca",
+			},
+			{
+				Name:  "N-am facut asta niciodata!",
+				Value: "narerost.dca",
+			},
+			{
+				Name:  "Paul, vieni qui.",
+				Value: "sanfranciscu.dca",
+			},
 		},
 		Required: true,
 	})
