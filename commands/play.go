@@ -18,35 +18,35 @@ func playCommand() *types.Playback {
 		Choices: []*discordgo.ApplicationCommandOptionChoice{
 			{
 				Name:  "Ara-Ara",
-				Value: "ara.dca",
+				Value: "misc/ara.dca",
 			},
 			{
 				Name:  "Yoooooooouuu",
-				Value: "yoo.dca",
+				Value: "misc/yoo.dca",
 			},
 			{
 				Name:  "FBI Open Up",
-				Value: "fbi.dca",
+				Value: "misc/fbi.dca",
 			},
 			{
 				Name:  "Hehe Boy!",
-				Value: "heheboy.dca",
+				Value: "misc/heheboy.dca",
 			},
 			{
 				Name:  "Yamete Kudasai!",
-				Value: "yamete.dca",
+				Value: "misc/yamete.dca",
 			},
 			{
 				Name:  "No God Please No!",
-				Value: "nogod.dca",
+				Value: "misc/nogod.dca",
 			},
 			{
 				Name:  "Mission failed.",
-				Value: "failed.dca",
+				Value: "misc/failed.dca",
 			},
 			{
 				Name:  "Death",
-				Value: "death.dca",
+				Value: "misc/death.dca",
 			},
 		},
 		Required: true,

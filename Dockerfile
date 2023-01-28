@@ -13,7 +13,7 @@ FROM golang:1.19-alpine
 
 WORKDIR /
 
-COPY --from=build /resonator /resonator
-COPY --from=build /app/misc /misc
+COPY --link --from=build /resonator /resonator
+COPY --link --from=build /app/misc /misc
 
 ENTRYPOINT ["/resonator"]

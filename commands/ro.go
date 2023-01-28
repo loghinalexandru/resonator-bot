@@ -18,51 +18,51 @@ func roCommand() *types.Playback {
 		Choices: []*discordgo.ApplicationCommandOptionChoice{
 			{
 				Name:  "Hai mai repede!",
-				Value: "repede.dca",
+				Value: "misc/repede.dca",
 			},
 			{
 				Name:  "Fa nu mai vomita!",
-				Value: "vomita.dca",
+				Value: "misc/vomita.dca",
 			},
 			{
 				Name:  "Il bag in ma-sa!",
-				Value: "baginmasa.dca",
+				Value: "misc/baginmasa.dca",
 			},
 			{
 				Name:  "Da? Vrei ceas?",
-				Value: "muienuvrei.dca",
+				Value: "misc/muienuvrei.dca",
 			},
 			{
 				Name:  "Dau flash!",
-				Value: "flash.dca",
+				Value: "misc/flash.dca",
 			},
 			{
 				Name:  "Sarut-mana",
-				Value: "sarutmana.dca",
+				Value: "misc/sarutmana.dca",
 			},
 			{
 				Name:  "La culcare!",
-				Value: "laculcare.dca",
+				Value: "misc/laculcare.dca",
 			},
 			{
 				Name:  "Da tu cu stomacul ce ai?",
-				Value: "stomacul.dca",
+				Value: "misc/stomacul.dca",
 			},
 			{
 				Name:  "Ma tu carti citesti?",
-				Value: "carticitesti.dca",
+				Value: "misc/carticitesti.dca",
 			},
 			{
 				Name:  "N-am facut asta niciodata!",
-				Value: "narerost.dca",
+				Value: "misc/narerost.dca",
 			},
 			{
 				Name:  "Paul, vieni qui.",
-				Value: "sanfranciscu.dca",
+				Value: "misc/sanfranciscu.dca",
 			},
 			{
 				Name:  "Prin puterea zeilor!",
-				Value: "putereazeilor.dca",
+				Value: "misc/putereazeilor.dca",
 			},
 		},
 		Required: true,

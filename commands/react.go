@@ -18,31 +18,31 @@ func reactCommand() *types.Playback {
 		Choices: []*discordgo.ApplicationCommandOptionChoice{
 			{
 				Name:  "Eh?",
-				Value: "eh.dca",
+				Value: "misc/eh.dca",
 			},
 			{
 				Name:  "Alta intrebare.",
-				Value: "intrebare.dca",
+				Value: "misc/intrebare.dca",
 			},
 			{
 				Name:  "Yass",
-				Value: "yass.dca",
+				Value: "misc/yass.dca",
 			},
 			{
 				Name:  "Bruuh!",
-				Value: "bruh.dca",
+				Value: "misc/bruh.dca",
 			},
 			{
 				Name:  "Bagmias Pl.",
-				Value: "pl.dca",
+				Value: "misc/pl.dca",
 			},
 			{
 				Name:  "To be continued...",
-				Value: "continued.dca",
+				Value: "misc/continued.dca",
 			},
 			{
 				Name:  "Directed By Robert B. Weide",
-				Value: "directedby.dca",
+				Value: "misc/directedby.dca",
 			},
 		},
 		Required: true,

@@ -44,7 +44,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 				return err
 			}
 
-			path := fmt.Sprintf("misc/%v", inter.ApplicationCommandData().Options[0].Value)
+			path := fmt.Sprintf("%v", inter.ApplicationCommandData().Options[0].Value)
 			err = playSound(sess, botvc, path)
 
 			if err != nil {
