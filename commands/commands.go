@@ -7,6 +7,7 @@ import (
 var commands = []CustomCommandDef{
 	playCommand(),
 	reactCommand(),
+	roCommand(),
 }
 
 type CustomCommandDef interface {
