@@ -118,5 +118,5 @@ func sendResponse(session *discordgo.Session, interaction *discordgo.Interaction
 }
 
 func (cmdSync *cmdSync) idleDisconnect(vc *discordgo.VoiceConnection) {
-	cmdSync.idle = time.AfterFunc(10*time.Second, func() { vc.Disconnect() })
+	cmdSync.idle = time.AfterFunc(3*time.Minute, func() { vc.Disconnect() })
 }
