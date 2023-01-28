@@ -57,14 +57,14 @@ func main() {
 	}
 
 	for _, command := range commands.Data() {
-		_, commandCreationError := session.ApplicationCommandCreate(session.State.User.ID, "", command.Definition())
+		_, err := session.ApplicationCommandCreate(session.State.User.ID, "", command.Definition())
 
-		if commandCreationError != nil {
-			fmt.Println(commandCreationError)
+		if err != nil {
+			fmt.Println(err)
 		}
 	}
 
-	signalTermination := make(chan os.Signal, 1)
-	signal.Notify(signalTermination, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-signalTermination
+	sigTerm := make(chan os.Signal, 1)
+	signal.Notify(sigTerm, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sigTerm
 }

@@ -17,10 +17,12 @@ func InteractionCreate() func(*discordgo.Session, *discordgo.InteractionCreate) 
 	commands := commands.Data()
 
 	return func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-		commandError := commands[interaction.ApplicationCommandData().Name].Handler(session, interaction)
+		if cmd, ok := commands[interaction.ApplicationCommandData().Name]; ok {
+			commandError := cmd.Handler(session, interaction)
 
-		if commandError != nil {
-			fmt.Println(commandError)
+			if commandError != nil {
+				fmt.Println(commandError)
+			}
 		}
 	}
 }

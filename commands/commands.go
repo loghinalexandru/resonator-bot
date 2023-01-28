@@ -1,23 +1,15 @@
 package commands
 
 import (
-	"sync"
-
 	"github.com/bwmarrin/discordgo"
 )
 
-var commands = [2]CustomCommandDef{
-	&playCommand{
-		identifier: "play",
-		mtxMap:     sync.Map{},
-	},
-	&basicCommand{
-		identifier: "basic",
-	},
+var commands = []CustomCommandDef{
+	playCommand(),
+	reactCommand(),
 }
 
 type CustomCommandDef interface {
-	ID() string
 	Definition() *discordgo.ApplicationCommand
 	Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error
 }
@@ -26,7 +18,7 @@ func Data() map[string]CustomCommandDef {
 	var commandsTable = make(map[string]CustomCommandDef)
 
 	for _, cmd := range commands {
-		commandsTable[cmd.ID()] = cmd
+		commandsTable[cmd.Definition().Name] = cmd
 	}
 
 	return commandsTable
