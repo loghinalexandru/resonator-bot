@@ -1,12 +1,16 @@
 package commands
 
 import (
+	"sync"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/commands/types"
 )
 
-func roCommand() *types.Playback {
-	var out types.Playback
+func roCommand(sync *sync.Map) *types.Playback {
+	out := types.Playback{
+		Storage: sync,
+	}
 
 	result := out.Definition()
 	result.Name = "ro"

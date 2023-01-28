@@ -13,7 +13,7 @@ import (
 )
 
 type Playback struct {
-	storage sync.Map
+	Storage *sync.Map
 	def     discordgo.ApplicationCommand
 }
 
@@ -44,7 +44,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 		return err
 	}
 
-	entry, _ := cmd.storage.LoadOrStore(guild.ID, &cmdSync{})
+	entry, _ := cmd.Storage.LoadOrStore(guild.ID, &cmdSync{})
 	cmdSync := entry.(*cmdSync)
 	result := cmdSync.mtx.TryLock()
 
@@ -118,5 +118,5 @@ func sendResponse(session *discordgo.Session, interaction *discordgo.Interaction
 }
 
 func (cmdSync *cmdSync) idleDisconnect(vc *discordgo.VoiceConnection) {
-	cmdSync.idle = time.AfterFunc(3*time.Minute, func() { vc.Disconnect() })
+	cmdSync.idle = time.AfterFunc(10*time.Second, func() { vc.Disconnect() })
 }

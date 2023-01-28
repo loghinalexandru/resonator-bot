@@ -1,14 +1,19 @@
 package commands
 
 import (
+	"sync"
+
 	"github.com/bwmarrin/discordgo"
 )
 
-var commands = []CustomCommandDef{
-	playCommand(),
-	reactCommand(),
-	roCommand(),
-}
+var (
+	cmdSync  sync.Map
+	commands = []CustomCommandDef{
+		playCommand(&cmdSync),
+		reactCommand(&cmdSync),
+		roCommand(&cmdSync),
+	}
+)
 
 type CustomCommandDef interface {
 	Definition() *discordgo.ApplicationCommand
