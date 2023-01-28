@@ -1,4 +1,5 @@
-#syntax=docker/dockerfile:1
+#syntax=docker/dockerfile:latest
+
 FROM golang:1.19-alpine AS build
 
 WORKDIR /app
@@ -12,7 +13,6 @@ FROM golang:1.19-alpine
 
 WORKDIR /
 
-COPY --from=build /resonator /resonator
-COPY --from=build /app/misc /misc
+COPY --from=build  /app/misc /resonator /
 
 ENTRYPOINT ["/resonator"]
