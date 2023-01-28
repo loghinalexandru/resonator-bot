@@ -13,8 +13,13 @@ import (
 )
 
 type Playback struct {
-	mtxMap sync.Map
-	def    discordgo.ApplicationCommand
+	storage sync.Map
+	def     discordgo.ApplicationCommand
+}
+
+type cmdSync struct {
+	mtx  sync.Mutex
+	idle *time.Timer
 }
 
 func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
@@ -39,19 +44,22 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 		return err
 	}
 
-	mtx, loaded := cmd.mtxMap.LoadOrStore(guild.ID, &sync.Mutex{})
-	result := mtx.(*sync.Mutex).TryLock()
+	entry, _ := cmd.storage.LoadOrStore(guild.ID, &cmdSync{})
+	cmdSync := entry.(*cmdSync)
+	result := cmdSync.mtx.TryLock()
 
 	if !result {
 		sendResponse(sess, inter, "Please wait your turn!")
 		return nil
 	}
 
-	if !loaded {
-		botvc.AddHandler(voiceUpdate)
+	if cmdSync.idle != nil {
+		cmdSync.idle.Stop()
+		cmdSync.idle = nil
 	}
 
-	defer mtx.(*sync.Mutex).Unlock()
+	defer cmdSync.idleDisconnect(botvc)
+	defer cmdSync.mtx.Unlock()
 	sendResponse(sess, inter, "Playing!")
 
 	path := fmt.Sprintf("%v", inter.ApplicationCommandData().Options[0].Value)
@@ -109,7 +117,6 @@ func sendResponse(session *discordgo.Session, interaction *discordgo.Interaction
 	})
 }
 
-func voiceUpdate(vc *discordgo.VoiceConnection, vs *discordgo.VoiceSpeakingUpdate) {
-	//TODO
-	return
+func (cmdSync *cmdSync) idleDisconnect(vc *discordgo.VoiceConnection) {
+	cmdSync.idle = time.AfterFunc(3*time.Minute, func() { vc.Disconnect() })
 }
