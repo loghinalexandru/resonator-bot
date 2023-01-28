@@ -22,36 +22,43 @@ func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
 }
 
 func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
+	var botvc *discordgo.VoiceConnection
+	var err error
+
 	channel, _ := sess.State.Channel(inter.ChannelID)
 	guild, _ := sess.State.Guild(channel.GuildID)
 
-	mtx, _ := cmd.mtxMap.LoadOrStore(guild.ID, &sync.Mutex{})
+	for _, voice := range guild.VoiceStates {
+		if inter.Member.User.ID == voice.UserID {
+			botvc, err = sess.ChannelVoiceJoin(guild.ID, voice.ChannelID, false, true)
+		}
+	}
+
+	if botvc == nil || err != nil {
+		sendResponse(sess, inter, "Please join a voice channel!")
+		return err
+	}
+
+	mtx, loaded := cmd.mtxMap.LoadOrStore(guild.ID, &sync.Mutex{})
 	result := mtx.(*sync.Mutex).TryLock()
 
 	if !result {
 		sendResponse(sess, inter, "Please wait your turn!")
 		return nil
 	}
-	sendResponse(sess, inter, "Playing!")
+
+	if !loaded {
+		botvc.AddHandler(voiceUpdate)
+	}
 
 	defer mtx.(*sync.Mutex).Unlock()
+	sendResponse(sess, inter, "Playing!")
 
-	for _, voice := range guild.VoiceStates {
-		if inter.Member.User.ID == voice.UserID {
-			botvc, err := sess.ChannelVoiceJoin(guild.ID, voice.ChannelID, false, true)
+	path := fmt.Sprintf("%v", inter.ApplicationCommandData().Options[0].Value)
+	err = playSound(sess, botvc, path)
 
-			if err != nil {
-				return err
-			}
-
-			path := fmt.Sprintf("%v", inter.ApplicationCommandData().Options[0].Value)
-			err = playSound(sess, botvc, path)
-
-			if err != nil {
-				return err
-			}
-			break
-		}
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -100,4 +107,9 @@ func sendResponse(session *discordgo.Session, interaction *discordgo.Interaction
 			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
+}
+
+func voiceUpdate(vc *discordgo.VoiceConnection, vs *discordgo.VoiceSpeakingUpdate) {
+	//TODO
+	return
 }
