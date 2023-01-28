@@ -1,0 +1,17 @@
+#syntax=docker/dockerfile:1
+FROM golang:1.19-alpine AS build
+
+WORKDIR /app
+
+COPY ../ .
+
+RUN go mod download
+RUN go build -o /resonator
+
+FROM golang:1.19-alpine
+
+WORKDIR /
+
+COPY --from=build /resonator /resonator
+
+ENTRYPOINT ["/resonator"]
