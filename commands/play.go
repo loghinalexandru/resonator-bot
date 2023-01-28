@@ -21,32 +21,12 @@ func playCommand() *types.Playback {
 				Value: "ara.dca",
 			},
 			{
-				Name:  "Hai mai repede!",
-				Value: "repede.dca",
-			},
-			{
 				Name:  "Yoooooooouuu",
 				Value: "yoo.dca",
 			},
 			{
 				Name:  "FBI Open Up",
 				Value: "fbi.dca",
-			},
-			{
-				Name:  "Fa nu mai vomita!",
-				Value: "vomita.dca",
-			},
-			{
-				Name:  "Il bag in ma-sa!",
-				Value: "baginmasa.dca",
-			},
-			{
-				Name:  "Da? Vrei ceas?",
-				Value: "muienuvrei.dca",
-			},
-			{
-				Name:  "Dau flash!",
-				Value: "flash.dca",
 			},
 			{
 				Name:  "Hehe Boy!",
@@ -57,36 +37,8 @@ func playCommand() *types.Playback {
 				Value: "yamete.dca",
 			},
 			{
-				Name:  "Sarut-mana",
-				Value: "sarutmana.dca",
-			},
-			{
 				Name:  "No God Please No!",
 				Value: "nogod.dca",
-			},
-			{
-				Name:  "La culcare!",
-				Value: "laculcare.dca",
-			},
-			{
-				Name:  "Da tu cu stomacul ce ai?",
-				Value: "stomacul.dca",
-			},
-			{
-				Name:  "Ma tu carti citesti?",
-				Value: "carticitesti.dca",
-			},
-			{
-				Name:  "N-am facut asta niciodata!",
-				Value: "narerost.dca",
-			},
-			{
-				Name:  "Paul, vieni qui.",
-				Value: "sanfranciscu.dca",
-			},
-			{
-				Name:  "Prin puterea zeilor!",
-				Value: "putereazeilor.dca",
 			},
 			{
 				Name:  "Mission failed.",
