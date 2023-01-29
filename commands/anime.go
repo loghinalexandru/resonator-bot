@@ -7,7 +7,7 @@ import (
 
 func NewAnime() *types.Kitsu {
 	out := types.Kitsu{
-		URL: "https://kitsu.io/api/edge/anime?filter[text]=%v",
+		URL: "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=5",
 		Def: &discordgo.ApplicationCommand{
 			Name:        "anime",
 			Description: "This command is used find anime via kitsu API!",

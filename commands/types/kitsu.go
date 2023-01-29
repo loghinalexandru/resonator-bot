@@ -15,21 +15,24 @@ type Kitsu struct {
 	Def *discordgo.ApplicationCommand
 }
 
-type data struct {
-	Id        string `json:"id"`
-	EntryType string `json:"type"`
-	Stats     struct {
-		Title  string `json:"canonicalTitle"`
-		Rating string `json:"averageRating"`
-		Rated  string `json:"ageRating"`
-		Status string `json:"status"`
-		Start  string `json:"startDate"`
-		End    string `json:"endDate"`
+type content struct {
+	Id    string `json:"id"`
+	Stats struct {
+		Title    string `json:"canonicalTitle"`
+		Type     string `json:"showType"`
+		Rating   string `json:"averageRating"`
+		Rated    string `json:"ageRating"`
+		Status   string `json:"status"`
+		Start    string `json:"startDate"`
+		End      string `json:"endDate"`
+		Episodes int32  `json:"episodeCount"`
+		Length   int32  `json:"episodeLength"`
+		Total    int32  `json:"totalLength"`
 	} `json:"attributes"`
 }
 
-type kitsuResp struct {
-	Content []data `json:"data"`
+type wrapper struct {
+	Content []content `json:"data"`
 }
 
 func (cmd *Kitsu) Definition() *discordgo.ApplicationCommand {
@@ -47,7 +50,7 @@ func (cmd *Kitsu) Handler(sess *discordgo.Session, inter *discordgo.InteractionC
 	defer response.Body.Close()
 	content, _ := io.ReadAll(response.Body)
 
-	var resp kitsuResp
+	var resp wrapper
 	var sb strings.Builder
 	err = json.Unmarshal(content, &resp)
 
@@ -57,8 +60,8 @@ func (cmd *Kitsu) Handler(sess *discordgo.Session, inter *discordgo.InteractionC
 	if len(resp.Content) > 0 {
 		sb.WriteString("Here's a list: \n")
 		for _, r := range resp.Content {
-			sb.WriteString(fmt.Sprintf("**%v** %v, First Aired: %v, Ended In: %v", r.Stats.Title, r.Stats.Status, r.Stats.Start, r.Stats.End))
-			sb.WriteString("\n")
+			sb.WriteString(fmt.Sprintf("**%s - %s**\n", r.Stats.Title, strings.ToUpper(r.Stats.Status)))
+			sb.WriteString(fmt.Sprintf("> Episodes: %v, Length:  %vm, Total Time: %vm\n", r.Stats.Episodes, r.Stats.Length, r.Stats.Total))
 		}
 	} else {
 		sb.WriteString("No match found :(")
