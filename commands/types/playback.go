@@ -14,7 +14,7 @@ import (
 
 type Playback struct {
 	Storage *sync.Map
-	def     discordgo.ApplicationCommand
+	Def     *discordgo.ApplicationCommand
 }
 
 type cmdSync struct {
@@ -23,7 +23,7 @@ type cmdSync struct {
 }
 
 func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
-	return &cmd.def
+	return cmd.Def
 }
 
 func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {

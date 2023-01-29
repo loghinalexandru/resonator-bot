@@ -9,9 +9,10 @@ import (
 var (
 	cmdSync  sync.Map
 	commands = []CustomCommandDef{
-		playCommand(&cmdSync),
-		reactCommand(&cmdSync),
-		roCommand(&cmdSync),
+		NewPlay(&cmdSync),
+		NewReact(&cmdSync),
+		NewRo(&cmdSync),
+		NewAnime(),
 	}
 )
 
