@@ -13,6 +13,7 @@ var (
 		NewReact(&cmdSync),
 		NewRo(&cmdSync),
 		NewAnime(),
+		NewManga(),
 	}
 )
 

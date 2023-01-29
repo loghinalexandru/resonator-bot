@@ -8,12 +8,11 @@ import (
 	"github.com/loghinalexandru/resonator/commands/types"
 )
 
-type content struct {
+type animeData struct {
 	Id    string `json:"id"`
 	Stats struct {
 		Title    string `json:"canonicalTitle"`
 		Type     string `json:"showType"`
-		Rating   string `json:"averageRating"`
 		Rated    string `json:"ageRating"`
 		Status   string `json:"status"`
 		Start    string `json:"startDate"`
@@ -24,23 +23,23 @@ type content struct {
 	} `json:"attributes"`
 }
 
-type wrapper struct {
-	Content []content `json:"data"`
+type animeWrapper struct {
+	Content []animeData `json:"data"`
 }
 
 func NewAnime() *types.REST {
 	out := types.REST{
 		URL:       "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=5",
-		Type:      &wrapper{},
-		Formatter: kitsuFormat,
+		Type:      &animeWrapper{},
+		Formatter: animeFormatter,
 		Def: &discordgo.ApplicationCommand{
 			Name:        "anime",
-			Description: "This command is used find anime via kitsu API!",
+			Description: "This command is used find anime via Kitsu API!",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        "keyword",
-					Description: "Keyword to search for",
+					Description: "Keyword to search for: ",
 					Required:    true,
 				},
 			},
@@ -49,9 +48,9 @@ func NewAnime() *types.REST {
 	return &out
 }
 
-func kitsuFormat(content any) string {
+func animeFormatter(content any) string {
 	var sb strings.Builder
-	resp, ok := content.(*wrapper)
+	resp, ok := content.(*animeWrapper)
 
 	if !ok {
 		return "Something went wrong!"
@@ -61,7 +60,7 @@ func kitsuFormat(content any) string {
 		sb.WriteString("Here's a list: \n")
 		for _, r := range resp.Content {
 			sb.WriteString(fmt.Sprintf("**%s - %s**\n", r.Stats.Title, strings.ToUpper(r.Stats.Status)))
-			sb.WriteString(fmt.Sprintf("> Episodes: %v, Length:  %vm, Total Time: %vm\n", r.Stats.Episodes, r.Stats.Length, r.Stats.Total))
+			sb.WriteString(fmt.Sprintf("> Type: %v, Episodes: %v, Length:  %vm, Total Time: %vm\n", r.Stats.Type, r.Stats.Episodes, r.Stats.Length, r.Stats.Total))
 		}
 	} else {
 		sb.WriteString("No match found :(")
