@@ -53,7 +53,7 @@ func NewRo(sync *sync.Map) *types.Playback {
 						},
 						{
 							Name:  "Japoniaaa!",
-							Value: "misc/japonia.dsc",
+							Value: "misc/japonia.dca",
 						},
 						{
 							Name:  "Ma tu carti citesti?",
