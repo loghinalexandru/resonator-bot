@@ -68,7 +68,6 @@ func (cmd *Kitsu) Handler(sess *discordgo.Session, inter *discordgo.InteractionC
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: sb.String(),
-			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
 
