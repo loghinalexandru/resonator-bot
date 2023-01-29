@@ -40,6 +40,30 @@ func NewReact(sync *sync.Map) *types.Playback {
 							Value: "misc/pl.dca",
 						},
 						{
+							Name:  "Maaaai",
+							Value: "misc/mai.dca",
+						},
+						{
+							Name:  "Culcat!",
+							Value: "misc/culcat.dca",
+						},
+						{
+							Name:  "Mi-a dat",
+							Value: "misc/adat.dca",
+						},
+						{
+							Name:  "Ma bat cainii astia!",
+							Value: "misc/caini.dca",
+						},
+						{
+							Name:  "Why are you gay?",
+							Value: "misc/whygay.dca",
+						},
+						{
+							Name:  "Noice!",
+							Value: "misc/noice.dca",
+						},
+						{
 							Name:  "To be continued...",
 							Value: "misc/continued.dca",
 						},

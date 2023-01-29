@@ -52,8 +52,16 @@ func NewRo(sync *sync.Map) *types.Playback {
 							Value: "misc/stomacul.dca",
 						},
 						{
+							Name:  "Japoniaaa!",
+							Value: "misc/japonia.dsc",
+						},
+						{
 							Name:  "Ma tu carti citesti?",
 							Value: "misc/carticitesti.dca",
+						},
+						{
+							Name:  "Pielea pulii...",
+							Value: "misc/pieleapulii.dca",
 						},
 						{
 							Name:  "N-am facut asta niciodata!",
