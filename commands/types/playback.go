@@ -60,10 +60,13 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 
 	defer cmdSync.idleDisconnect(botvc)
 	defer cmdSync.mtx.Unlock()
+	defer botvc.Speaking(false)
+
+	botvc.Speaking(true)
 	sendResponse(sess, inter, "Playing!")
 
 	path := fmt.Sprintf("%v", inter.ApplicationCommandData().Options[0].Value)
-	err = playSound(sess, botvc, path)
+	err = playSound(botvc.OpusSend, path)
 
 	if err != nil {
 		return err
@@ -72,10 +75,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	return nil
 }
 
-func playSound(sess *discordgo.Session, voice *discordgo.VoiceConnection, filePath string) error {
-	voice.Speaking(true)
-	defer voice.Speaking(false)
-
+func playSound(soundBuff chan<- []byte, filePath string) error {
 	input, ioError := os.Open(filePath)
 	if ioError != nil {
 		return ioError
@@ -83,10 +83,6 @@ func playSound(sess *discordgo.Session, voice *discordgo.VoiceConnection, filePa
 
 	defer input.Close()
 	decoder := dca.NewDecoder(input)
-
-	if !voice.Ready {
-		return errors.New("Voice channel not ready!")
-	}
 
 	for {
 		frame, err := decoder.OpusFrame()
@@ -98,7 +94,7 @@ func playSound(sess *discordgo.Session, voice *discordgo.VoiceConnection, filePa
 		}
 
 		select {
-		case voice.OpusSend <- frame:
+		case soundBuff <- frame:
 		case <-time.After(2 * time.Second):
 			return errors.New("Timeout!")
 		}
