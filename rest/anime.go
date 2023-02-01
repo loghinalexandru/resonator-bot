@@ -1,11 +1,10 @@
-package commands
+package rest
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/loghinalexandru/resonator/commands/types"
 )
 
 type animeData struct {
@@ -27,8 +26,8 @@ type animeWrapper struct {
 	Content []animeData `json:"data"`
 }
 
-func NewAnime() *types.REST {
-	out := types.REST{
+func NewAnime() *REST {
+	out := REST{
 		URL:       "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=5",
 		Type:      &animeWrapper{},
 		Formatter: animeFormatter,

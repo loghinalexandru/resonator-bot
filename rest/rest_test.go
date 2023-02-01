@@ -1,4 +1,4 @@
-package types
+package rest
 
 import (
 	"reflect"

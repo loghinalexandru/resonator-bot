@@ -4,17 +4,18 @@ import (
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/loghinalexandru/resonator/commands"
+	"github.com/loghinalexandru/resonator/playback"
+	"github.com/loghinalexandru/resonator/rest"
 )
 
 var (
 	cmdSync sync.Map
 	cmds    = []CustomCommandDef{
-		commands.NewPlay(&cmdSync),
-		commands.NewReact(&cmdSync),
-		commands.NewRo(&cmdSync),
-		commands.NewAnime(),
-		commands.NewManga(),
+		playback.NewPlay(&cmdSync),
+		playback.NewReact(&cmdSync),
+		playback.NewRo(&cmdSync),
+		rest.NewAnime(),
+		rest.NewManga(),
 	}
 )
 

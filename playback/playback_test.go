@@ -1,4 +1,4 @@
-package types
+package playback
 
 import (
 	"sync"
@@ -80,10 +80,10 @@ func TestHandler(t *testing.T) {
 	target := &Playback{
 		Def:     &discordgo.ApplicationCommand{},
 		Storage: &sync.Map{},
-		Voice: func(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
+		voice: func(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
 			return &discordgo.VoiceConnection{}, nil
 		},
-		Guild: func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
+		guild: func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
 			return &discordgo.Guild{
 				ID: guildID,
 				VoiceStates: []*discordgo.VoiceState{
@@ -93,7 +93,7 @@ func TestHandler(t *testing.T) {
 				},
 			}, nil
 		},
-		Response: func(sess *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+		response: func(sess *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
 			return
 		},
 	}

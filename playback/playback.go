@@ -1,4 +1,4 @@
-package types
+package playback
 
 import (
 	"errors"
@@ -18,14 +18,14 @@ const (
 	exec     = "Playing!"
 )
 
-type Voice func(sess *discordgo.Session, guildID string, voiceID string, mute bool, deaf bool) (*discordgo.VoiceConnection, error)
-type Guild func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error)
-type Response func(sess *discordgo.Session, interaction *discordgo.InteractionCreate, msg string)
+type voice func(sess *discordgo.Session, guildID string, voiceID string, mute bool, deaf bool) (*discordgo.VoiceConnection, error)
+type guild func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error)
+type response func(sess *discordgo.Session, interaction *discordgo.InteractionCreate, msg string)
 
 type Playback struct {
-	Voice
-	Guild
-	Response
+	voice
+	guild
+	response
 	Storage *sync.Map
 	Def     *discordgo.ApplicationCommand
 }
@@ -43,16 +43,16 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	var botvc *discordgo.VoiceConnection
 	var err error
 
-	guild, _ := cmd.Guild(sess, inter)
+	guild, _ := cmd.guild(sess, inter)
 
 	for _, voice := range guild.VoiceStates {
 		if inter.Member.User.ID == voice.UserID {
-			botvc, err = cmd.Voice(sess, guild.ID, voice.ChannelID, false, true)
+			botvc, err = cmd.voice(sess, guild.ID, voice.ChannelID, false, true)
 		}
 	}
 
 	if botvc == nil || err != nil {
-		cmd.Response(sess, inter, joinVc)
+		cmd.response(sess, inter, joinVc)
 		return err
 	}
 
@@ -61,7 +61,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	result := cmdSync.mtx.TryLock()
 
 	if !result {
-		cmd.Response(sess, inter, waitTurn)
+		cmd.response(sess, inter, waitTurn)
 		return nil
 	}
 
@@ -75,7 +75,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	defer botvc.Speaking(false)
 
 	botvc.Speaking(true)
-	cmd.Response(sess, inter, exec)
+	cmd.response(sess, inter, exec)
 
 	path := fmt.Sprintf("%v", inter.ApplicationCommandData().Options[0].Value)
 	err = playSound(botvc.OpusSend, path)

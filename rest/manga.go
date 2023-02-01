@@ -1,11 +1,10 @@
-package commands
+package rest
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/loghinalexandru/resonator/commands/types"
 )
 
 type mangaData struct {
@@ -27,8 +26,8 @@ type mangaWrapper struct {
 	Content []mangaData `json:"data"`
 }
 
-func NewManga() *types.REST {
-	out := types.REST{
+func NewManga() *REST {
+	out := REST{
 		URL:       "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=5",
 		Type:      &mangaWrapper{},
 		Formatter: mangaFormatter,
