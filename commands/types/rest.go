@@ -42,12 +42,15 @@ func (cmd *REST) Handler(sess *discordgo.Session, inter *discordgo.InteractionCr
 		return err
 	}
 
-	sess.InteractionRespond(inter.Interaction, &discordgo.InteractionResponse{
+	sess.InteractionRespond(inter.Interaction, cmd.createReponse())
+	return nil
+}
+
+func (cmd *REST) createReponse() *discordgo.InteractionResponse {
+	return &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: cmd.Formatter(cmd.Type),
 		},
-	})
-
-	return nil
+	}
 }

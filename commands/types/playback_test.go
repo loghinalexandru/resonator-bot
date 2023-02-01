@@ -22,7 +22,7 @@ func TestPlaySoundWithFile(t *testing.T) {
 	t.Parallel()
 
 	testChan := make(chan []byte, 100)
-	res := playSound(testChan, "test_file.dca")
+	res := playSound(testChan, "mock/test_file.dca")
 
 	if res != nil {
 		t.Error("This should be nil!")
