@@ -12,7 +12,20 @@ import (
 	"github.com/jonas747/dca"
 )
 
+const (
+	waitTurn = "Please wait your turn!"
+	joinVc   = "Please join a voice channel!"
+	exec     = "Playing!"
+)
+
+type Voice func(sess *discordgo.Session, guildID string, voiceID string, mute bool, deaf bool) (*discordgo.VoiceConnection, error)
+type Guild func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error)
+type Response func(sess *discordgo.Session, interaction *discordgo.InteractionCreate, msg string)
+
 type Playback struct {
+	Voice
+	Guild
+	Response
 	Storage *sync.Map
 	Def     *discordgo.ApplicationCommand
 }
@@ -30,17 +43,16 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	var botvc *discordgo.VoiceConnection
 	var err error
 
-	channel, _ := sess.State.Channel(inter.ChannelID)
-	guild, _ := sess.State.Guild(channel.GuildID)
+	guild, _ := cmd.Guild(sess, inter)
 
 	for _, voice := range guild.VoiceStates {
 		if inter.Member.User.ID == voice.UserID {
-			botvc, err = sess.ChannelVoiceJoin(guild.ID, voice.ChannelID, false, true)
+			botvc, err = cmd.Voice(sess, guild.ID, voice.ChannelID, false, true)
 		}
 	}
 
 	if botvc == nil || err != nil {
-		sendResponse(sess, inter, "Please join a voice channel!")
+		cmd.Response(sess, inter, joinVc)
 		return err
 	}
 
@@ -49,7 +61,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	result := cmdSync.mtx.TryLock()
 
 	if !result {
-		sendResponse(sess, inter, "Please wait your turn!")
+		cmd.Response(sess, inter, waitTurn)
 		return nil
 	}
 
@@ -63,7 +75,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	defer botvc.Speaking(false)
 
 	botvc.Speaking(true)
-	sendResponse(sess, inter, "Playing!")
+	cmd.Response(sess, inter, exec)
 
 	path := fmt.Sprintf("%v", inter.ApplicationCommandData().Options[0].Value)
 	err = playSound(botvc.OpusSend, path)

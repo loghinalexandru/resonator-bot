@@ -7,8 +7,6 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/loghinalexandru/resonator/commands"
-	"github.com/loghinalexandru/resonator/handlers"
 )
 
 var token string
@@ -28,9 +26,9 @@ func getIntents() discordgo.Intent {
 
 func getHandlers() []interface{} {
 	return []any{
-		handlers.MessageCreate,
-		handlers.Ready,
-		handlers.InteractionCreate(),
+		MessageCreate,
+		Ready,
+		InteractionCreate(),
 	}
 }
 
@@ -56,7 +54,7 @@ func main() {
 		return
 	}
 
-	for _, command := range commands.Data() {
+	for _, command := range CmdTable() {
 		_, err := session.ApplicationCommandCreate(session.State.User.ID, "", command.Definition())
 
 		if err != nil {

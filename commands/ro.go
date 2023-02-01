@@ -10,6 +10,26 @@ import (
 func NewRo(sync *sync.Map) *types.Playback {
 	out := types.Playback{
 		Storage: sync,
+		Voice: func(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
+			{
+				return sess.ChannelVoiceJoin(guildID, voiceID, mute, deaf)
+			}
+		},
+		Guild: func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
+			{
+				channel, _ := sess.State.Channel(inter.ChannelID)
+				return sess.State.Guild(channel.GuildID)
+			}
+		},
+		Response: func(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+			session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Content: msg,
+					Flags:   discordgo.MessageFlagsEphemeral,
+				},
+			})
+		},
 		Def: &discordgo.ApplicationCommand{
 			Name:        "ro",
 			Description: "This command is used to play a romanian sound in the chat!",

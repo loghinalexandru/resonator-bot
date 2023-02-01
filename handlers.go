@@ -1,10 +1,9 @@
-package handlers
+package main
 
 import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/loghinalexandru/resonator/commands"
 )
 
 func Ready(session *discordgo.Session, ready *discordgo.Ready) {
@@ -14,7 +13,7 @@ func Ready(session *discordgo.Session, ready *discordgo.Ready) {
 }
 
 func InteractionCreate() func(*discordgo.Session, *discordgo.InteractionCreate) {
-	commands := commands.Data()
+	commands := CmdTable()
 
 	return func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 		if cmd, ok := commands[interaction.ApplicationCommandData().Name]; ok {

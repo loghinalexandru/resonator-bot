@@ -1,19 +1,20 @@
-package commands
+package main
 
 import (
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/commands"
 )
 
 var (
-	cmdSync  sync.Map
-	commands = []CustomCommandDef{
-		NewPlay(&cmdSync),
-		NewReact(&cmdSync),
-		NewRo(&cmdSync),
-		NewAnime(),
-		NewManga(),
+	cmdSync sync.Map
+	cmds    = []CustomCommandDef{
+		commands.NewPlay(&cmdSync),
+		commands.NewReact(&cmdSync),
+		commands.NewRo(&cmdSync),
+		commands.NewAnime(),
+		commands.NewManga(),
 	}
 )
 
@@ -22,10 +23,10 @@ type CustomCommandDef interface {
 	Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error
 }
 
-func Data() map[string]CustomCommandDef {
+func CmdTable() map[string]CustomCommandDef {
 	var commandsTable = make(map[string]CustomCommandDef)
 
-	for _, cmd := range commands {
+	for _, cmd := range cmds {
 		commandsTable[cmd.Definition().Name] = cmd
 	}
 
