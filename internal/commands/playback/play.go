@@ -8,8 +8,8 @@ import (
 
 func NewPlay(sync *sync.Map) *Playback {
 	out := Playback{
-		Storage: sync,
-		Def: &discordgo.ApplicationCommand{
+		storage: sync,
+		def: &discordgo.ApplicationCommand{
 			Name:        "play",
 			Description: "This command is used to play a sound in the chat!",
 			Options: []*discordgo.ApplicationCommandOption{

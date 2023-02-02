@@ -8,28 +8,8 @@ import (
 
 func NewReact(sync *sync.Map) *Playback {
 	out := Playback{
-		Storage: sync,
-		voice: func(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
-			{
-				return sess.ChannelVoiceJoin(guildID, voiceID, mute, deaf)
-			}
-		},
-		guild: func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
-			{
-				channel, _ := sess.State.Channel(inter.ChannelID)
-				return sess.State.Guild(channel.GuildID)
-			}
-		},
-		response: func(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
-			session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Content: msg,
-					Flags:   discordgo.MessageFlagsEphemeral,
-				},
-			})
-		},
-		Def: &discordgo.ApplicationCommand{
+		storage: sync,
+		def: &discordgo.ApplicationCommand{
 			Name:        "react",
 			Description: "This command is used to react with a sound in the chat!",
 			Options: []*discordgo.ApplicationCommandOption{

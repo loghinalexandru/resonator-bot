@@ -11,7 +11,7 @@ func TestDefinition(t *testing.T) {
 	t.Parallel()
 
 	target := &Playback{
-		Def: &discordgo.ApplicationCommand{},
+		def: &discordgo.ApplicationCommand{},
 	}
 
 	if target.Definition() == nil {
@@ -36,7 +36,7 @@ func TestPlaySoundWithFile(t *testing.T) {
 	}
 }
 
-func TestPlaySoundWithError(t *testing.T) {
+func TestPlaySound_WithError(t *testing.T) {
 	t.Parallel()
 
 	res := playSound(make(chan<- []byte), "")
@@ -59,7 +59,10 @@ func TestIdleDisconnect(t *testing.T) {
 
 func TestHandler(t *testing.T) {
 	t.Parallel()
-	guildID := "test"
+	voice = joinVoiceMock
+	guild = getGuildMock
+	response = sendRespMock
+
 	inter := &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{
 			Type: discordgo.InteractionApplicationCommand,
@@ -78,24 +81,8 @@ func TestHandler(t *testing.T) {
 		},
 	}
 	target := &Playback{
-		Def:     &discordgo.ApplicationCommand{},
-		Storage: &sync.Map{},
-		voice: func(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
-			return &discordgo.VoiceConnection{}, nil
-		},
-		guild: func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
-			return &discordgo.Guild{
-				ID: guildID,
-				VoiceStates: []*discordgo.VoiceState{
-					{
-						UserID: "user",
-					},
-				},
-			}, nil
-		},
-		response: func(sess *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
-			return
-		},
+		def:     &discordgo.ApplicationCommand{},
+		storage: &sync.Map{},
 	}
 
 	err := target.Handler(&discordgo.Session{}, inter)
@@ -103,7 +90,7 @@ func TestHandler(t *testing.T) {
 	if err == nil {
 		t.Errorf("Should not be emtty!")
 	}
-	entry, ok := target.Storage.Load(guildID)
+	entry, ok := target.storage.Load("test")
 
 	if !ok {
 		t.Errorf("Missing entry from map!")
@@ -112,4 +99,23 @@ func TestHandler(t *testing.T) {
 	if entry.(*cmdSync).idle == nil {
 		t.Errorf("Missing timer!")
 	}
+}
+
+func joinVoiceMock(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
+	return &discordgo.VoiceConnection{}, nil
+}
+
+func getGuildMock(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
+	return &discordgo.Guild{
+		ID: "test",
+		VoiceStates: []*discordgo.VoiceState{
+			{
+				UserID: "user",
+			},
+		},
+	}, nil
+}
+
+func sendRespMock(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+	return
 }

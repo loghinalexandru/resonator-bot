@@ -18,16 +18,15 @@ const (
 	exec     = "Playing!"
 )
 
-type voice func(sess *discordgo.Session, guildID string, voiceID string, mute bool, deaf bool) (*discordgo.VoiceConnection, error)
-type guild func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error)
-type response func(sess *discordgo.Session, interaction *discordgo.InteractionCreate, msg string)
+var (
+	voice    = joinVoice
+	guild    = getGuild
+	response = sendResp
+)
 
 type Playback struct {
-	voice
-	guild
-	response
-	Storage *sync.Map
-	Def     *discordgo.ApplicationCommand
+	storage *sync.Map
+	def     *discordgo.ApplicationCommand
 }
 
 type cmdSync struct {
@@ -36,32 +35,32 @@ type cmdSync struct {
 }
 
 func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
-	return cmd.Def
+	return cmd.def
 }
 
 func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
 	var botvc *discordgo.VoiceConnection
 	var err error
 
-	guild, _ := cmd.guild(sess, inter)
+	guild, _ := guild(sess, inter)
 
-	for _, voice := range guild.VoiceStates {
-		if inter.Member.User.ID == voice.UserID {
-			botvc, err = cmd.voice(sess, guild.ID, voice.ChannelID, false, true)
+	for _, vc := range guild.VoiceStates {
+		if inter.Member.User.ID == vc.UserID {
+			botvc, err = voice(sess, guild.ID, vc.ChannelID, false, true)
 		}
 	}
 
 	if botvc == nil || err != nil {
-		cmd.response(sess, inter, joinVc)
+		response(sess, inter, joinVc)
 		return err
 	}
 
-	entry, _ := cmd.Storage.LoadOrStore(guild.ID, &cmdSync{})
+	entry, _ := cmd.storage.LoadOrStore(guild.ID, &cmdSync{})
 	cmdSync := entry.(*cmdSync)
 	result := cmdSync.mtx.TryLock()
 
 	if !result {
-		cmd.response(sess, inter, waitTurn)
+		response(sess, inter, waitTurn)
 		return nil
 	}
 
@@ -75,7 +74,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	defer botvc.Speaking(false)
 
 	botvc.Speaking(true)
-	cmd.response(sess, inter, exec)
+	response(sess, inter, exec)
 
 	path := fmt.Sprintf("%v", inter.ApplicationCommandData().Options[0].Value)
 	err = playSound(botvc.OpusSend, path)
@@ -127,4 +126,23 @@ func sendResponse(session *discordgo.Session, interaction *discordgo.Interaction
 
 func (cmdSync *cmdSync) idleDisconnect(vc *discordgo.VoiceConnection) {
 	cmdSync.idle = time.AfterFunc(3*time.Minute, func() { vc.Disconnect() })
+}
+
+func joinVoice(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
+	return sess.ChannelVoiceJoin(guildID, voiceID, mute, deaf)
+}
+
+func getGuild(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
+	channel, _ := sess.State.Channel(inter.ChannelID)
+	return sess.State.Guild(channel.GuildID)
+}
+
+func sendResp(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: msg,
+			Flags:   discordgo.MessageFlagsEphemeral,
+		},
+	})
 }
