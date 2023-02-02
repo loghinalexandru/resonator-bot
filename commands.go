@@ -4,8 +4,8 @@ import (
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/loghinalexandru/resonator/playback"
-	"github.com/loghinalexandru/resonator/rest"
+	"github.com/loghinalexandru/resonator/internal/commands/playback"
+	"github.com/loghinalexandru/resonator/internal/commands/rest"
 )
 
 var (
