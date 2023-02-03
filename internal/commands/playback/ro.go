@@ -74,6 +74,10 @@ func NewRo(sync *sync.Map) *Playback {
 							Name:  "Prin puterea zeilor!",
 							Value: "misc/putereazeilor.dca",
 						},
+						{
+							Name:  "Hu sha sh",
+							Value: "misc/hushash.dca",
+						},
 					},
 					Required: true,
 				},
