@@ -28,7 +28,7 @@ type animeWrapper struct {
 
 func NewAnime() *REST {
 	out := REST{
-		URL:       "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=5",
+		URL:       "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=10",
 		Type:      &animeWrapper{},
 		Formatter: animeFormatter,
 		Def: &discordgo.ApplicationCommand{

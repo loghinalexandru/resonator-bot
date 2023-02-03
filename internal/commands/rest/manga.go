@@ -28,7 +28,7 @@ type mangaWrapper struct {
 
 func NewManga() *REST {
 	out := REST{
-		URL:       "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=5",
+		URL:       "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10",
 		Type:      &mangaWrapper{},
 		Formatter: mangaFormatter,
 		Def: &discordgo.ApplicationCommand{
