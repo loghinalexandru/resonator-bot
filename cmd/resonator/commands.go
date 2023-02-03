@@ -16,6 +16,7 @@ var (
 		playback.NewRo(&cmdSync),
 		rest.NewAnime(),
 		rest.NewManga(),
+		rest.NewQuote(),
 	}
 )
 
