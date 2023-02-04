@@ -9,6 +9,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+const (
+	failure = "Service can not be reached!"
+)
+
 type REST struct {
 	URL       string
 	TTS       bool
@@ -32,6 +36,18 @@ func (cmd *REST) Handler(sess *discordgo.Session, inter *discordgo.InteractionCr
 	response, err := http.Get(customURL)
 
 	if err != nil {
+		return err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		sess.InteractionRespond(inter.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Content: failure,
+				Flags:   discordgo.MessageFlagsEphemeral,
+			},
+		})
+
 		return nil
 	}
 

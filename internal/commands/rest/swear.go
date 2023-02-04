@@ -14,13 +14,35 @@ type SwearData struct {
 
 func NewSwear() *REST {
 	out := REST{
-		URL:       "http://localhost:3000/api/random?lang=ro",
+		URL:       "http://localhost:3000/api/random?lang=%v",
 		TTS:       true,
 		Type:      &SwearData{},
 		Formatter: swearFormatter,
 		Def: &discordgo.ApplicationCommand{
 			Name:        "swear",
 			Description: "This command is used to play a TTS message of a random swear",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionString,
+					Name:        "language",
+					Description: "Specify in which language your swear will be",
+					Required:    true,
+					Choices: []*discordgo.ApplicationCommandOptionChoice{
+						{
+							Name:  "Romanian",
+							Value: "ro",
+						},
+						{
+							Name:  "English",
+							Value: "en",
+						},
+						{
+							Name:  "French",
+							Value: "fr",
+						},
+					},
+				},
+			},
 		},
 	}
 	return &out
