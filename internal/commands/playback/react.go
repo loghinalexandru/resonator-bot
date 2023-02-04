@@ -70,6 +70,10 @@ func NewReact(sync *sync.Map) *Playback {
 							Name:  "Directed By Robert B. Weide",
 							Value: "misc/directedby.dca",
 						},
+						{
+							Name:  "Fraierii comenteaza ba nene!",
+							Value: "misc/fraieriicomenteaza.dca",
+						},
 					},
 					Required: true,
 				},

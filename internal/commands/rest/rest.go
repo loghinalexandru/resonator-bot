@@ -11,6 +11,8 @@ import (
 
 type REST struct {
 	URL       string
+	TTS       bool
+	Flags     discordgo.MessageFlags
 	Type      any
 	Formatter func(payload any) string
 	Def       *discordgo.ApplicationCommand
@@ -51,6 +53,8 @@ func (cmd *REST) createReponse() *discordgo.InteractionResponse {
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Content: cmd.Formatter(cmd.Type),
+			Flags:   cmd.Flags,
+			TTS:     cmd.TTS,
 		},
 	}
 }

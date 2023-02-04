@@ -17,6 +17,7 @@ var (
 		rest.NewAnime(),
 		rest.NewManga(),
 		rest.NewQuote(),
+		rest.NewSwear(),
 	}
 )
 
