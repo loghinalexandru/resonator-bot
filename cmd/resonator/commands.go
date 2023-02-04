@@ -14,6 +14,7 @@ var (
 		playback.NewPlay(&cmdSync),
 		playback.NewReact(&cmdSync),
 		playback.NewRo(&cmdSync),
+		playback.NewCurse(&cmdSync),
 		rest.NewAnime(),
 		rest.NewManga(),
 		rest.NewQuote(),

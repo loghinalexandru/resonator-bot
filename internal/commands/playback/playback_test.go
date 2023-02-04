@@ -1,6 +1,7 @@
 package playback
 
 import (
+	"os"
 	"sync"
 	"testing"
 
@@ -23,9 +24,12 @@ func TestPlaySoundWithFile(t *testing.T) {
 	t.Parallel()
 
 	testChan := make(chan []byte, 100)
-	res := playSound(testChan, "testdata/test_file.dca")
+	fh, _ := os.Open("testdata/test_file.dca")
+	defer fh.Close()
 
-	if res != nil {
+	err := playSound(testChan, fh)
+
+	if err != nil {
 		t.Error("This should be nil!")
 	}
 
@@ -39,9 +43,10 @@ func TestPlaySoundWithFile(t *testing.T) {
 func TestPlaySound_WithError(t *testing.T) {
 	t.Parallel()
 
-	res := playSound(make(chan<- []byte), "")
+	fh, _ := os.Open("")
+	err := playSound(make(chan<- []byte), fh)
 
-	if res == nil {
+	if err == nil {
 		t.Error("This should not be nil!")
 	}
 }

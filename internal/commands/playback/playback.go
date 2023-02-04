@@ -2,8 +2,9 @@ package playback
 
 import (
 	"errors"
-	"fmt"
 	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"sync"
 	"time"
@@ -76,8 +77,23 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	botvc.Speaking(true)
 	response(sess, inter, exec)
 
-	path := fmt.Sprintf("%v", inter.ApplicationCommandData().Options[0].Value)
-	err = playSound(botvc.OpusSend, path)
+	var input io.Reader
+	path := inter.ApplicationCommandData().Options[0].Value.(string)
+
+	url, err := url.Parse(path)
+
+	//TODO: refactor this & add error handling
+	if url.Scheme == "" || url.Host == "" || url.Path == "" {
+		fileReader, _ := os.Open(path)
+		input = fileReader
+		defer fileReader.Close()
+	} else {
+		resp, _ := http.Get(url.String())
+		input = resp.Body
+		defer resp.Body.Close()
+	}
+
+	err = playSound(botvc.OpusSend, input)
 
 	if err != nil {
 		return err
@@ -86,14 +102,12 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	return nil
 }
 
-func playSound(soundBuff chan<- []byte, filePath string) error {
-	input, ioError := os.Open(filePath)
-	if ioError != nil {
-		return ioError
+func playSound(soundBuff chan<- []byte, fh io.Reader) error {
+	if fh == nil {
+		return errors.New("Null file handler!")
 	}
 
-	defer input.Close()
-	decoder := dca.NewDecoder(input)
+	decoder := dca.NewDecoder(fh)
 
 	for {
 		frame, err := decoder.OpusFrame()
@@ -128,6 +142,7 @@ func (cmdSync *cmdSync) idleDisconnect(vc *discordgo.VoiceConnection) {
 	cmdSync.idle = time.AfterFunc(3*time.Minute, func() { vc.Disconnect() })
 }
 
+// Seam functions for testing purposes
 func joinVoice(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
 	return sess.ChannelVoiceJoin(guildID, voiceID, mute, deaf)
 }

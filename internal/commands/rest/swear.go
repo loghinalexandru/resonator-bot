@@ -20,12 +20,12 @@ func NewSwear() *REST {
 		Formatter: swearFormatter,
 		Def: &discordgo.ApplicationCommand{
 			Name:        "swear",
-			Description: "This command is used to play a TTS message of a random swear",
+			Description: "This command is used to play a TTS message of a random swear!",
 			Options: []*discordgo.ApplicationCommandOption{
 				{
 					Type:        discordgo.ApplicationCommandOptionString,
 					Name:        "language",
-					Description: "Specify in which language your swear will be",
+					Description: "Specify in which language your swear will be!",
 					Required:    true,
 					Choices: []*discordgo.ApplicationCommandOptionChoice{
 						{
