@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: resonator-deployment
+  labels:
+    app.kubernetes.io/name: resonator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: resonator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: resonator
+    spec:
+      containers:
+      - name: resonator
+        image: ghcr.io/loghinalexandru/resonator:0.4.0
+        imagePullPolicy: Always
+        env:
+        - name: BOT_TOKEN
+          value: ""

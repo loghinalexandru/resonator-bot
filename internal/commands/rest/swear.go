@@ -14,6 +14,7 @@ type SwearData struct {
 
 func NewSwear() *REST {
 	out := REST{
+		//Reference this via ENV variable
 		URL:       "http://swears-svc/api/random?lang=%v",
 		TTS:       true,
 		Type:      &SwearData{},

@@ -19,7 +19,8 @@ func NewCurse(sync *sync.Map) *Playback {
 					Description: "Specify in which language your encouragement will be!",
 					Choices: []*discordgo.ApplicationCommandOptionChoice{
 						{
-							Name:  "Romanian",
+							Name: "Romanian",
+							//Reference this via ENV variable
 							Value: "http://swears-svc/api/random/file?lang=ro&opus=true",
 						},
 					},

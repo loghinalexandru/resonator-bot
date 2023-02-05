@@ -30,11 +30,6 @@ type Playback struct {
 	def     *discordgo.ApplicationCommand
 }
 
-type cmdSync struct {
-	mtx  sync.Mutex
-	idle *time.Timer
-}
-
 func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
 	return cmd.def
 }
@@ -56,22 +51,16 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 		return err
 	}
 
-	entry, _ := cmd.storage.LoadOrStore(guild.ID, &cmdSync{})
-	cmdSync := entry.(*cmdSync)
-	result := cmdSync.mtx.TryLock()
+	entry, _ := cmd.storage.LoadOrStore(guild.ID, &sync.Mutex{})
+	mtx := entry.(*sync.Mutex)
+	result := mtx.TryLock()
 
 	if !result {
 		response(sess, inter, waitTurn)
 		return nil
 	}
 
-	if cmdSync.idle != nil {
-		cmdSync.idle.Stop()
-		cmdSync.idle = nil
-	}
-
-	defer cmdSync.idleDisconnect(botvc)
-	defer cmdSync.mtx.Unlock()
+	defer mtx.Unlock()
 	defer botvc.Speaking(false)
 
 	botvc.Speaking(true)
@@ -136,10 +125,6 @@ func sendResponse(session *discordgo.Session, interaction *discordgo.Interaction
 			Flags:   discordgo.MessageFlagsEphemeral,
 		},
 	})
-}
-
-func (cmdSync *cmdSync) idleDisconnect(vc *discordgo.VoiceConnection) {
-	cmdSync.idle = time.AfterFunc(3*time.Minute, func() { vc.Disconnect() })
 }
 
 // Seam functions for testing purposes

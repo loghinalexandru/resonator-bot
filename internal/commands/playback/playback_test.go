@@ -51,17 +51,6 @@ func TestPlaySound_WithError(t *testing.T) {
 	}
 }
 
-func TestIdleDisconnect(t *testing.T) {
-	t.Parallel()
-	target := cmdSync{}
-
-	target.idleDisconnect(&discordgo.VoiceConnection{})
-
-	if target.idle == nil {
-		t.Error("This should not be nil!")
-	}
-}
-
 func TestHandler(t *testing.T) {
 	t.Parallel()
 	voice = joinVoiceMock
@@ -101,7 +90,7 @@ func TestHandler(t *testing.T) {
 		t.Errorf("Missing entry from map!")
 	}
 
-	if entry.(*cmdSync).idle == nil {
+	if entry.(*sync.Mutex) == nil {
 		t.Errorf("Missing timer!")
 	}
 }
