@@ -14,7 +14,7 @@ type SwearData struct {
 
 func NewSwear() *REST {
 	out := REST{
-		URL:       "http://localhost:3000/api/random?lang=%v",
+		URL:       "http://swears-svc/api/random?lang=%v",
 		TTS:       true,
 		Type:      &SwearData{},
 		Formatter: swearFormatter,

@@ -20,7 +20,7 @@ func NewCurse(sync *sync.Map) *Playback {
 					Choices: []*discordgo.ApplicationCommandOptionChoice{
 						{
 							Name:  "Romanian",
-							Value: "http://localhost:3000/api/random/file?lang=ro&opus=true",
+							Value: "http://swears-svc/api/random/file?lang=ro&opus=true",
 						},
 					},
 					Required: true,
