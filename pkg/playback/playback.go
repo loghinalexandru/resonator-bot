@@ -30,6 +30,13 @@ type Playback struct {
 	def     *discordgo.ApplicationCommand
 }
 
+func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand) Playback {
+	return Playback{
+		def:     definition,
+		storage: syncMap,
+	}
+}
+
 func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
 	return cmd.def
 }

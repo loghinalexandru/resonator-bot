@@ -15,15 +15,20 @@ const (
 
 type REST struct {
 	URL       string
-	TTS       bool
 	Flags     discordgo.MessageFlags
 	Type      any
 	Formatter func(payload any) string
-	Def       *discordgo.ApplicationCommand
+	def       *discordgo.ApplicationCommand
+}
+
+func New(definition *discordgo.ApplicationCommand) REST {
+	return REST{
+		def: definition,
+	}
 }
 
 func (cmd *REST) Definition() *discordgo.ApplicationCommand {
-	return cmd.Def
+	return cmd.def
 }
 
 func (cmd *REST) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
@@ -70,7 +75,6 @@ func (cmd *REST) createReponse() *discordgo.InteractionResponse {
 		Data: &discordgo.InteractionResponseData{
 			Content: cmd.Formatter(cmd.Type),
 			Flags:   cmd.Flags,
-			TTS:     cmd.TTS,
 		},
 	}
 }

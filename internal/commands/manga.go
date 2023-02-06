@@ -1,10 +1,11 @@
-package rest
+package commands
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/pkg/rest"
 )
 
 type mangaData struct {
@@ -26,24 +27,24 @@ type mangaWrapper struct {
 	Content []mangaData `json:"data"`
 }
 
-func NewManga() *REST {
-	out := REST{
-		URL:       "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10",
-		Type:      &mangaWrapper{},
-		Formatter: mangaFormatter,
-		Def: &discordgo.ApplicationCommand{
-			Name:        "manga",
-			Description: "This command is used find manga via Kitsu API!",
-			Options: []*discordgo.ApplicationCommandOption{
-				{
-					Type:        discordgo.ApplicationCommandOptionString,
-					Name:        "keyword",
-					Description: "Keyword to search for: ",
-					Required:    true,
-				},
+func NewManga() *rest.REST {
+	out := rest.New(&discordgo.ApplicationCommand{
+		Name:        "manga",
+		Description: "This command is used find manga via Kitsu API!",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Type:        discordgo.ApplicationCommandOptionString,
+				Name:        "keyword",
+				Description: "Keyword to search for: ",
+				Required:    true,
 			},
 		},
-	}
+	})
+
+	out.URL = "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10"
+	out.Type = &mangaWrapper{}
+	out.Formatter = mangaFormatter
+
 	return &out
 }
 

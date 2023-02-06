@@ -1,25 +1,7 @@
 package main
 
 import (
-	"sync"
-
 	"github.com/bwmarrin/discordgo"
-	"github.com/loghinalexandru/resonator/internal/commands/playback"
-	"github.com/loghinalexandru/resonator/internal/commands/rest"
-)
-
-var (
-	cmdSync sync.Map
-	cmds    = []CustomCommandDef{
-		playback.NewPlay(&cmdSync),
-		playback.NewReact(&cmdSync),
-		playback.NewRo(&cmdSync),
-		playback.NewCurse(&cmdSync),
-		rest.NewAnime(),
-		rest.NewManga(),
-		rest.NewQuote(),
-		rest.NewSwear(),
-	}
 )
 
 type CustomCommandDef interface {
@@ -28,6 +10,7 @@ type CustomCommandDef interface {
 }
 
 func CmdTable() map[string]CustomCommandDef {
+
 	var commandsTable = make(map[string]CustomCommandDef)
 
 	for _, cmd := range cmds {

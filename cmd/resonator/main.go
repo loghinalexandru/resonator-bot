@@ -4,12 +4,19 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/internal/commands"
 )
 
-var token string
+var (
+	token     string
+	swearsURL string
+	cmdSync   sync.Map
+	cmds      []CustomCommandDef
+)
 
 func init() {
 	var success bool
@@ -17,6 +24,23 @@ func init() {
 
 	if !success {
 		token = ""
+	}
+
+	swearsURL, success = os.LookupEnv("SWEARS_API")
+
+	if !success {
+		swearsURL = ""
+	}
+
+	cmds = []CustomCommandDef{
+		commands.NewPlay(&cmdSync),
+		commands.NewReact(&cmdSync),
+		commands.NewRo(&cmdSync),
+		commands.NewCurse(&cmdSync, swearsURL),
+		commands.NewSwear(swearsURL),
+		commands.NewAnime(),
+		commands.NewManga(),
+		commands.NewQuote(),
 	}
 }
 
@@ -26,8 +50,7 @@ func getIntents() discordgo.Intent {
 
 func getHandlers() []interface{} {
 	return []any{
-		MessageCreate,
-		Ready,
+		Ready(),
 		InteractionCreate(),
 	}
 }
@@ -55,7 +78,8 @@ func main() {
 	}
 
 	for _, command := range CmdTable() {
-		_, err := session.ApplicationCommandCreate(session.State.User.ID, "", command.Definition())
+		_, err := session.ApplicationCommandCreate(
+			session.State.User.ID, "", command.Definition())
 
 		if err != nil {
 			fmt.Println(err)

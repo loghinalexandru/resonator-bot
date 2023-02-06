@@ -6,10 +6,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func Ready(session *discordgo.Session, ready *discordgo.Ready) {
-	fmt.Println("Bot is ready!")
-	fmt.Println("Bot ShardId: ", session.ShardID)
-	fmt.Println("Bot ShardCount: ", session.ShardCount)
+func Ready() func(*discordgo.Session, *discordgo.InteractionCreate) {
+	return func(sess *discordgo.Session, inter *discordgo.InteractionCreate) {
+		fmt.Println("Bot is ready!")
+		fmt.Println("Bot ShardId: ", sess.ShardID)
+		fmt.Println("Bot ShardCount: ", sess.ShardCount)
+	}
 }
 
 func InteractionCreate() func(*discordgo.Session, *discordgo.InteractionCreate) {
@@ -23,11 +25,5 @@ func InteractionCreate() func(*discordgo.Session, *discordgo.InteractionCreate) 
 				fmt.Println(commandError)
 			}
 		}
-	}
-}
-
-func MessageCreate(session *discordgo.Session, message *discordgo.MessageCreate) {
-	if message.Author.ID == session.State.User.ID {
-		return
 	}
 }
