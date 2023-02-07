@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: resonator
-        image: ghcr.io/loghinalexandru/resonator:0.4.0
+        image: ghcr.io/loghinalexandru/resonator:latest
         imagePullPolicy: Always
         env:
         - name: BOT_TOKEN
