@@ -73,22 +73,14 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	botvc.Speaking(true)
 	response(sess, inter, exec)
 
-	var input io.Reader
 	path := inter.ApplicationCommandData().Options[0].Value.(string)
+	input, err := getAudioSource(path)
 
-	url, err := url.Parse(path)
-
-	//TODO: refactor this & add error handling
-	if url.Scheme == "" || url.Host == "" || url.Path == "" {
-		fileReader, _ := os.Open(path)
-		input = fileReader
-		defer fileReader.Close()
-	} else {
-		resp, _ := http.Get(url.String())
-		input = resp.Body
-		defer resp.Body.Close()
+	if err != nil {
+		return err
 	}
 
+	defer input.Close()
 	err = playSound(botvc.OpusSend, input)
 
 	if err != nil {
@@ -96,6 +88,28 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	}
 
 	return nil
+}
+
+func getAudioSource(path string) (io.ReadCloser, error) {
+	url, err := url.Parse(path)
+
+	if err != nil || url.Scheme == "" || url.Host == "" || url.Path == "" {
+		res, err := os.Open(path)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
+	}
+
+	res, err := http.Get(url.String())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Body, nil
 }
 
 func playSound(soundBuff chan<- []byte, fh io.Reader) error {
@@ -124,6 +138,7 @@ func playSound(soundBuff chan<- []byte, fh io.Reader) error {
 	return nil
 }
 
+// Seam functions for testing purposes
 func sendResponse(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
 	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -134,7 +149,6 @@ func sendResponse(session *discordgo.Session, interaction *discordgo.Interaction
 	})
 }
 
-// Seam functions for testing purposes
 func joinVoice(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
 	return sess.ChannelVoiceJoin(guildID, voiceID, mute, deaf)
 }

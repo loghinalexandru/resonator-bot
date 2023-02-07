@@ -50,7 +50,7 @@ func getIntents() discordgo.Intent {
 
 func getHandlers() []interface{} {
 	return []any{
-		Ready(),
+		Join(),
 		InteractionCreate(),
 	}
 }
@@ -76,6 +76,10 @@ func main() {
 		fmt.Println(socketError)
 		return
 	}
+
+	fmt.Println("Bot is ready!")
+	fmt.Println("Bot ShardId: ", session.ShardID)
+	fmt.Println("Bot ShardCount: ", session.ShardCount)
 
 	for _, command := range CmdTable() {
 		_, err := session.ApplicationCommandCreate(

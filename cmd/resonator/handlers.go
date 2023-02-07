@@ -6,11 +6,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func Ready() func(*discordgo.Session, *discordgo.InteractionCreate) {
-	return func(sess *discordgo.Session, inter *discordgo.InteractionCreate) {
-		fmt.Println("Bot is ready!")
-		fmt.Println("Bot ShardId: ", sess.ShardID)
-		fmt.Println("Bot ShardCount: ", sess.ShardCount)
+func Join() func(*discordgo.Session, *discordgo.GuildCreate) {
+	return func(sess *discordgo.Session, gld *discordgo.GuildCreate) {
+		fmt.Printf("Joined guild with ID %v \n", gld.ID)
 	}
 }
 
@@ -19,10 +17,11 @@ func InteractionCreate() func(*discordgo.Session, *discordgo.InteractionCreate) 
 
 	return func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 		if cmd, ok := commands[interaction.ApplicationCommandData().Name]; ok {
-			commandError := cmd.Handler(session, interaction)
+			err := cmd.Handler(session, interaction)
 
-			if commandError != nil {
-				fmt.Println(commandError)
+			if err != nil {
+				//TODO: Add better logging
+				fmt.Println(err)
 			}
 		}
 	}
