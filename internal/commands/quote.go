@@ -16,11 +16,11 @@ func NewQuote() *rest.REST {
 	out := rest.New(&discordgo.ApplicationCommand{
 		Name:        "quote",
 		Description: "This command is used find Kanye West quotes!",
-	})
-
-	out.URL = "https://api.kanye.rest/"
-	out.Type = &quoteData{}
-	out.Formatter = quoteFormatter
+	},
+		rest.WithURL("https://api.kanye.rest/"),
+		rest.WithDataType(&quoteData{}),
+		rest.WithFormatter(quoteFormatter),
+	)
 
 	return &out
 }

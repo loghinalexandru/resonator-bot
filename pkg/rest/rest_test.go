@@ -16,8 +16,8 @@ func TestCreateResponse(t *testing.T) {
 	var payloadType reflect.Type
 	var testPayload TestStruct
 	target := &REST{
-		Type: testPayload,
-		Formatter: func(payload any) string {
+		dataType: testPayload,
+		formatter: func(payload any) string {
 			payloadType = reflect.TypeOf(payload)
 			return tstMessage
 		},

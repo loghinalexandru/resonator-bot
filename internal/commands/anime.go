@@ -39,11 +39,11 @@ func NewAnime() *rest.REST {
 				Required:    true,
 			},
 		},
-	})
-
-	out.URL = "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=10"
-	out.Type = &animeWrapper{}
-	out.Formatter = animeFormatter
+	},
+		rest.WithURL("https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=10"),
+		rest.WithDataType(&animeWrapper{}),
+		rest.WithFormatter(animeFormatter),
+	)
 
 	return &out
 }

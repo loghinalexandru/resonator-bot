@@ -39,11 +39,10 @@ func NewSwear(swearsURL string) *rest.REST {
 				},
 			},
 		},
-	})
-
-	out.URL = swearsURL + "/api/random?lang=%v"
-	out.Type = &SwearData{}
-	out.Formatter = swearFormatter
+	},
+		rest.WithURL(swearsURL+"/api/random?lang=%v"),
+		rest.WithDataType(&SwearData{}),
+		rest.WithFormatter(swearFormatter))
 
 	return &out
 }

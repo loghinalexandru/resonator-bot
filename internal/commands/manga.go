@@ -39,12 +39,11 @@ func NewManga() *rest.REST {
 				Required:    true,
 			},
 		},
-	})
-
-	out.URL = "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10"
-	out.Type = &mangaWrapper{}
-	out.Formatter = mangaFormatter
-
+	},
+		rest.WithURL("https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10"),
+		rest.WithDataType(&mangaWrapper{}),
+		rest.WithFormatter(mangaFormatter),
+	)
 	return &out
 }
 

@@ -9,21 +9,46 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+type OptionsFunc func(cmd *REST)
+
 const (
 	failure = "Service can not be reached!"
 )
 
 type REST struct {
-	URL       string
-	Flags     discordgo.MessageFlags
-	Type      any
-	Formatter func(payload any) string
+	url       string
+	dataType  any
+	formatter func(payload any) string
 	def       *discordgo.ApplicationCommand
 }
 
-func New(definition *discordgo.ApplicationCommand) REST {
-	return REST{
+func New(definition *discordgo.ApplicationCommand, options ...OptionsFunc) REST {
+	result := REST{
 		def: definition,
+	}
+
+	for _, opt := range options {
+		opt(&result)
+	}
+
+	return result
+}
+
+func WithURL(url string) OptionsFunc {
+	return func(cmd *REST) {
+		cmd.url = url
+	}
+}
+
+func WithDataType(dataType any) OptionsFunc {
+	return func(cmd *REST) {
+		cmd.dataType = dataType
+	}
+}
+
+func WithFormatter(formatter func(payload any) string) OptionsFunc {
+	return func(cmd *REST) {
+		cmd.formatter = formatter
 	}
 }
 
@@ -37,7 +62,7 @@ func (cmd *REST) Handler(sess *discordgo.Session, inter *discordgo.InteractionCr
 		args = append(args, v.Value.(string))
 	}
 
-	customURL := fmt.Sprintf(cmd.URL, args...)
+	customURL := fmt.Sprintf(cmd.url, args...)
 	response, err := http.Get(customURL)
 
 	if err != nil {
@@ -59,7 +84,7 @@ func (cmd *REST) Handler(sess *discordgo.Session, inter *discordgo.InteractionCr
 	defer response.Body.Close()
 	content, _ := io.ReadAll(response.Body)
 
-	err = json.Unmarshal(content, cmd.Type)
+	err = json.Unmarshal(content, cmd.dataType)
 
 	if err != nil {
 		return err
@@ -73,8 +98,7 @@ func (cmd *REST) createReponse() *discordgo.InteractionResponse {
 	return &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: cmd.Formatter(cmd.Type),
-			Flags:   cmd.Flags,
+			Content: cmd.formatter(cmd.dataType),
 		},
 	}
 }
