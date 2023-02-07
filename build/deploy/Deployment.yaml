@@ -21,3 +21,5 @@ spec:
         env:
         - name: BOT_TOKEN
           value: ""
+        - name: SWEARS_API_URL
+          value: "http://swears-svc"

@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	token     string
-	swearsURL string
-	cmdSync   sync.Map
-	cmds      []CustomCommandDef
+	token        string
+	swearsApiURL string
+	cmdSync      sync.Map
+	cmds         []CustomCommandDef
 )
 
 func init() {
@@ -26,18 +26,18 @@ func init() {
 		token = ""
 	}
 
-	swearsURL, success = os.LookupEnv("SWEARS_API")
+	swearsApiURL, success = os.LookupEnv("SWEARS_API_URL")
 
 	if !success {
-		swearsURL = ""
+		swearsApiURL = ""
 	}
 
 	cmds = []CustomCommandDef{
 		commands.NewPlay(&cmdSync),
 		commands.NewReact(&cmdSync),
 		commands.NewRo(&cmdSync),
-		commands.NewCurse(&cmdSync, swearsURL),
-		commands.NewSwear(swearsURL),
+		commands.NewCurse(&cmdSync, swearsApiURL),
+		commands.NewSwear(swearsApiURL),
 		commands.NewAnime(),
 		commands.NewManga(),
 		commands.NewQuote(),
