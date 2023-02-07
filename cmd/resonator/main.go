@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"sync"
@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	logger       *log.Logger
 	token        string
 	swearsApiURL string
 	cmdSync      sync.Map
@@ -19,6 +20,9 @@ var (
 )
 
 func init() {
+	logger = log.Default()
+	logger.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
 	var success bool
 	token, success = os.LookupEnv("BOT_TOKEN")
 
@@ -50,8 +54,8 @@ func getIntents() discordgo.Intent {
 
 func getHandlers() []interface{} {
 	return []any{
-		Join(),
-		InteractionCreate(),
+		Join(logger),
+		InteractionCreate(logger),
 	}
 }
 
@@ -59,7 +63,7 @@ func main() {
 	session, sessionError := discordgo.New("Bot " + token)
 
 	if sessionError != nil {
-		fmt.Println(sessionError)
+		logger.Println(sessionError)
 		return
 	}
 
@@ -73,20 +77,20 @@ func main() {
 	defer session.Close()
 
 	if socketError != nil {
-		fmt.Println(socketError)
+		logger.Println(socketError)
 		return
 	}
 
-	fmt.Println("Bot is ready!")
-	fmt.Println("Bot ShardId: ", session.ShardID)
-	fmt.Println("Bot ShardCount: ", session.ShardCount)
+	logger.Println("Bot is ready!")
+	logger.Println("Bot ShardId: ", session.ShardID)
+	logger.Println("Bot ShardCount: ", session.ShardCount)
 
 	for _, command := range CmdTable() {
 		_, err := session.ApplicationCommandCreate(
 			session.State.User.ID, "", command.Definition())
 
 		if err != nil {
-			fmt.Println(err)
+			logger.Println(err)
 		}
 	}
 
