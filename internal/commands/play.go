@@ -49,6 +49,10 @@ func NewPlay(sync *sync.Map) *playback.Playback {
 						Name:  "Death",
 						Value: "misc/death.dca",
 					},
+					{
+						Name:  "UwU",
+						Value: "misc/uwu.dca",
+					},
 				},
 				Required: true,
 			},

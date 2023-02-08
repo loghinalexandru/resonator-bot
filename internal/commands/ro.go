@@ -77,6 +77,14 @@ func NewRo(sync *sync.Map) *playback.Playback {
 						Name:  "Hu sha sh",
 						Value: "misc/hushash.dca",
 					},
+					{
+						Name:  "Ceausesculeee!",
+						Value: "misc/iesiunpic.dca",
+					},
+					{
+						Name:  "Schema 72",
+						Value: "misc/schema.dca",
+					},
 				},
 				Required: true,
 			},

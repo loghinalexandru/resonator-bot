@@ -70,6 +70,10 @@ func NewReact(sync *sync.Map) *playback.Playback {
 						Value: "misc/directedby.dca",
 					},
 					{
+						Name:  "Sometimes maybe good",
+						Value: "misc/sometimes.dca",
+					},
+					{
 						Name:  "Fraierii comenteaza ba nene!",
 						Value: "misc/fraieriicomenteaza.dca",
 					},
