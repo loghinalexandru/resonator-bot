@@ -13,8 +13,9 @@ type SwearData struct {
 	Lang  string `json:"lang"`
 }
 
-func NewSwear(swearsURL string) *rest.REST {
-	out := rest.New(&discordgo.ApplicationCommand{
+func NewSwear(swearsURL string) *rest.REST[SwearData] {
+	url := swearsURL + "/api/random?lang=%v"
+	def := &discordgo.ApplicationCommand{
 		Name:        "swear",
 		Description: "This command is used to play a TTS message of a random swear!",
 		Options: []*discordgo.ApplicationCommandOption{
@@ -39,21 +40,13 @@ func NewSwear(swearsURL string) *rest.REST {
 				},
 			},
 		},
-	},
-		rest.WithURL(swearsURL+"/api/random?lang=%v"),
-		rest.WithDataType(&SwearData{}),
-		rest.WithFormatter(swearFormatter))
+	}
 
-	return &out
+	return rest.New(def, url, swearFormatter)
 }
 
-func swearFormatter(content any) string {
+func swearFormatter(resp SwearData) string {
 	var sb strings.Builder
-	resp, ok := content.(*SwearData)
-
-	if !ok {
-		return "Something went wrong!"
-	}
 
 	sb.WriteString(fmt.Sprintf("> \"**%s**\"", resp.Swear))
 	return sb.String()

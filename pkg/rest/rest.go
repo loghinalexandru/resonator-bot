@@ -9,54 +9,32 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-type OptionsFunc func(cmd *REST)
-
 const (
 	failure = "Service can not be reached!"
 )
 
-type REST struct {
+type REST[T any] struct {
 	url       string
-	dataType  any
-	formatter func(payload any) string
+	data      T
+	formatter func(payload T) string
 	def       *discordgo.ApplicationCommand
 }
 
-func New(definition *discordgo.ApplicationCommand, options ...OptionsFunc) REST {
-	result := REST{
-		def: definition,
+func New[T any](definition *discordgo.ApplicationCommand, url string, form func(payload T) string) *REST[T] {
+	result := REST[T]{
+		def:       definition,
+		url:       url,
+		formatter: form,
 	}
 
-	for _, opt := range options {
-		opt(&result)
-	}
-
-	return result
+	return &result
 }
 
-func WithURL(url string) OptionsFunc {
-	return func(cmd *REST) {
-		cmd.url = url
-	}
-}
-
-func WithDataType(dataType any) OptionsFunc {
-	return func(cmd *REST) {
-		cmd.dataType = dataType
-	}
-}
-
-func WithFormatter(formatter func(payload any) string) OptionsFunc {
-	return func(cmd *REST) {
-		cmd.formatter = formatter
-	}
-}
-
-func (cmd *REST) Definition() *discordgo.ApplicationCommand {
+func (cmd *REST[T]) Definition() *discordgo.ApplicationCommand {
 	return cmd.def
 }
 
-func (cmd *REST) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
+func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
 	var args []any
 	for _, v := range inter.ApplicationCommandData().Options {
 		args = append(args, v.Value.(string))
@@ -84,7 +62,7 @@ func (cmd *REST) Handler(sess *discordgo.Session, inter *discordgo.InteractionCr
 	defer response.Body.Close()
 	content, _ := io.ReadAll(response.Body)
 
-	err = json.Unmarshal(content, cmd.dataType)
+	err = json.Unmarshal(content, &cmd.data)
 
 	if err != nil {
 		return err
@@ -94,11 +72,11 @@ func (cmd *REST) Handler(sess *discordgo.Session, inter *discordgo.InteractionCr
 	return nil
 }
 
-func (cmd *REST) createReponse() *discordgo.InteractionResponse {
+func (cmd *REST[T]) createReponse() *discordgo.InteractionResponse {
 	return &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: cmd.formatter(cmd.dataType),
+			Content: cmd.formatter(cmd.data),
 		},
 	}
 }

@@ -27,8 +27,9 @@ type mangaWrapper struct {
 	Content []mangaData `json:"data"`
 }
 
-func NewManga() *rest.REST {
-	out := rest.New(&discordgo.ApplicationCommand{
+func NewManga() *rest.REST[mangaWrapper] {
+	url := "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10"
+	def := &discordgo.ApplicationCommand{
 		Name:        "manga",
 		Description: "This command is used find manga via Kitsu API!",
 		Options: []*discordgo.ApplicationCommandOption{
@@ -39,21 +40,13 @@ func NewManga() *rest.REST {
 				Required:    true,
 			},
 		},
-	},
-		rest.WithURL("https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10"),
-		rest.WithDataType(&mangaWrapper{}),
-		rest.WithFormatter(mangaFormatter),
-	)
-	return &out
+	}
+
+	return rest.New(def, url, mangaFormatter)
 }
 
-func mangaFormatter(content any) string {
+func mangaFormatter(resp mangaWrapper) string {
 	var sb strings.Builder
-	resp, ok := content.(*mangaWrapper)
-
-	if !ok {
-		return "Something went wrong!"
-	}
 
 	if len(resp.Content) > 0 {
 		sb.WriteString("Here's a list: \n")
