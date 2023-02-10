@@ -8,7 +8,7 @@ import (
 )
 
 func NewRo(sync *sync.Map) *playback.Playback {
-	out := playback.New(sync, &discordgo.ApplicationCommand{
+	return playback.New(sync, &discordgo.ApplicationCommand{
 		Name:        "ro",
 		Description: "This command is used to play a romanian sound in the chat!",
 		Options: []*discordgo.ApplicationCommandOption{
@@ -90,6 +90,4 @@ func NewRo(sync *sync.Map) *playback.Playback {
 			},
 		},
 	})
-
-	return &out
 }

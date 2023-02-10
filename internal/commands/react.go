@@ -8,7 +8,7 @@ import (
 )
 
 func NewReact(sync *sync.Map) *playback.Playback {
-	out := playback.New(sync, &discordgo.ApplicationCommand{
+	return playback.New(sync, &discordgo.ApplicationCommand{
 		Name:        "react",
 		Description: "This command is used to react with a sound in the chat!",
 		Options: []*discordgo.ApplicationCommandOption{
@@ -82,6 +82,4 @@ func NewReact(sync *sync.Map) *playback.Playback {
 			},
 		},
 	})
-
-	return &out
 }

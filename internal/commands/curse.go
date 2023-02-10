@@ -9,7 +9,7 @@ import (
 )
 
 func NewCurse(sync *sync.Map, swearsURL string) *playback.Playback {
-	out := playback.New(sync, &discordgo.ApplicationCommand{
+	return playback.New(sync, &discordgo.ApplicationCommand{
 		Name:        "curse",
 		Description: "This command is used to play a friendly encouragement!",
 		Options: []*discordgo.ApplicationCommandOption{
@@ -35,6 +35,4 @@ func NewCurse(sync *sync.Map, swearsURL string) *playback.Playback {
 			},
 		},
 	})
-
-	return &out
 }
