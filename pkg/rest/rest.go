@@ -37,12 +37,12 @@ func (cmd *REST[T]) Definition() *discordgo.ApplicationCommand {
 func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
 	var args []any
 	for _, v := range inter.ApplicationCommandData().Options {
-		args = append(args, v.Value.(string))
+		if v.Type == discordgo.ApplicationCommandOptionString {
+			args = append(args, v.Value)
+		}
 	}
 
-	customURL := fmt.Sprintf(cmd.url, args...)
-	response, err := http.Get(customURL)
-
+	response, err := http.Get(fmt.Sprintf(cmd.url, args...))
 	if err != nil {
 		return err
 	}

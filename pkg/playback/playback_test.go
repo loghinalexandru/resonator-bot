@@ -20,7 +20,7 @@ func TestDefinition(t *testing.T) {
 	}
 }
 
-func TestPlaySoundWithFile(t *testing.T) {
+func TestPlaySound(t *testing.T) {
 	t.Parallel()
 
 	testChan := make(chan []byte, 100)
@@ -48,6 +48,32 @@ func TestPlaySound_WithError(t *testing.T) {
 
 	if err == nil {
 		t.Error("This should not be nil!")
+	}
+}
+
+func TestGetAudioSource(t *testing.T) {
+	tests := []struct {
+		path       string
+		shouldFail bool
+	}{
+		{"", true},
+		{"testdata/test_file.dca", false},
+		{"localhost.com/api", true},
+		{"https://www.google.com/", false},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.path, func(t *testing.T) {
+			res, err := getAudioSource(tc.path)
+
+			if err != nil && !tc.shouldFail {
+				t.Error("Should not fail!")
+			}
+
+			if tc.shouldFail == false && res == nil {
+				t.Error("Should not be nil!")
+			}
+		})
 	}
 }
 
@@ -82,16 +108,16 @@ func TestHandler(t *testing.T) {
 	err := target.Handler(&discordgo.Session{}, inter)
 
 	if err == nil {
-		t.Errorf("Should not be emtty!")
+		t.Error("Should not be emtty!")
 	}
 	entry, ok := target.storage.Load("test")
 
 	if !ok {
-		t.Errorf("Missing entry from map!")
+		t.Error("Missing entry from map!")
 	}
 
 	if entry.(*sync.Mutex) == nil {
-		t.Errorf("Missing timer!")
+		t.Error("Missing mutex!")
 	}
 }
 

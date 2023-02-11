@@ -93,7 +93,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 func getAudioSource(path string) (io.ReadCloser, error) {
 	url, err := url.Parse(path)
 
-	if err != nil || url.Scheme == "" || url.Host == "" || url.Path == "" {
+	if err != nil || url.Scheme == "" || url.Host == "" {
 		res, err := os.Open(path)
 
 		if err != nil {

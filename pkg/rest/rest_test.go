@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -13,19 +12,17 @@ type TestStruct struct {
 }
 
 func TestCreateResponse(t *testing.T) {
-	var payloadType reflect.Type
 	var testPayload TestStruct
-	target := &REST[any]{
+	target := &REST[TestStruct]{
 		data: testPayload,
-		formatter: func(payload any) string {
-			payloadType = reflect.TypeOf(payload)
+		formatter: func(payload TestStruct) string {
 			return tstMessage
 		},
 	}
 
 	res := target.createReponse()
 
-	if res.Data.Content != tstMessage || payloadType != reflect.TypeOf(testPayload) {
+	if res.Data.Content != tstMessage {
 		t.Error("Reponse message does not match!")
 	}
 }
