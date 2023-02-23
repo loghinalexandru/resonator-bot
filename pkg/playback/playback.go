@@ -20,9 +20,9 @@ const (
 )
 
 var (
-	voice    = joinVoice
-	guild    = getGuild
-	response = sendResp
+	voice   = joinVoice
+	guild   = getGuild
+	respond = sendResp
 )
 
 type Playback struct {
@@ -54,7 +54,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	}
 
 	if botvc == nil || err != nil {
-		response(sess, inter, joinVc)
+		respond(sess, inter, joinVc)
 		return err
 	}
 
@@ -63,7 +63,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	result := mtx.TryLock()
 
 	if !result {
-		response(sess, inter, waitTurn)
+		respond(sess, inter, waitTurn)
 		return nil
 	}
 
@@ -71,7 +71,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	defer botvc.Speaking(false)
 
 	botvc.Speaking(true)
-	response(sess, inter, exec)
+	respond(sess, inter, exec)
 
 	path := inter.ApplicationCommandData().Options[0].Value.(string)
 	input, err := getAudioSource(path)

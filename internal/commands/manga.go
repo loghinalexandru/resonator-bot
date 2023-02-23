@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -27,7 +28,7 @@ type mangaWrapper struct {
 	Content []mangaData `json:"data"`
 }
 
-func NewManga() *rest.REST[mangaWrapper] {
+func NewManga(client *http.Client) *rest.REST[mangaWrapper] {
 	url := "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10"
 	def := &discordgo.ApplicationCommand{
 		Name:        "manga",
@@ -42,7 +43,7 @@ func NewManga() *rest.REST[mangaWrapper] {
 		},
 	}
 
-	return rest.New(def, url, mangaFormatter)
+	return rest.New(def, url, client, mangaFormatter)
 }
 
 func mangaFormatter(resp mangaWrapper) string {

@@ -81,7 +81,7 @@ func TestHandler(t *testing.T) {
 	t.Parallel()
 	voice = joinVoiceMock
 	guild = getGuildMock
-	response = sendRespMock
+	respond = sendRespMock
 
 	inter := &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{

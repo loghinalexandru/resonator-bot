@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -12,14 +13,14 @@ type quoteData struct {
 	Quote string `json:"quote"`
 }
 
-func NewQuote() *rest.REST[quoteData] {
+func NewQuote(client *http.Client) *rest.REST[quoteData] {
 	url := "https://api.kanye.rest/"
 	def := &discordgo.ApplicationCommand{
 		Name:        "quote",
 		Description: "This command is used find Kanye West quotes!",
 	}
 
-	return rest.New(def, url, quoteFormatter)
+	return rest.New(def, url, client, quoteFormatter)
 }
 
 func quoteFormatter(content quoteData) string {

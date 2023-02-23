@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -41,10 +42,10 @@ func init() {
 		commands.NewReact(&cmdSync),
 		commands.NewRo(&cmdSync),
 		commands.NewCurse(&cmdSync, swearsApiURL),
-		commands.NewSwear(swearsApiURL),
-		commands.NewAnime(),
-		commands.NewManga(),
-		commands.NewQuote(),
+		commands.NewSwear(swearsApiURL, http.DefaultClient),
+		commands.NewAnime(http.DefaultClient),
+		commands.NewManga(http.DefaultClient),
+		commands.NewQuote(http.DefaultClient),
 	}
 }
 

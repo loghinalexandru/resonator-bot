@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -27,7 +28,7 @@ type animeWrapper struct {
 	Content []animeData `json:"data"`
 }
 
-func NewAnime() *rest.REST[animeWrapper] {
+func NewAnime(client *http.Client) *rest.REST[animeWrapper] {
 	url := "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=10"
 	def := &discordgo.ApplicationCommand{
 		Name:        "anime",
@@ -42,7 +43,7 @@ func NewAnime() *rest.REST[animeWrapper] {
 		},
 	}
 
-	return rest.New(def, url, animeFormatter)
+	return rest.New(def, url, client, animeFormatter)
 }
 
 func animeFormatter(resp animeWrapper) string {

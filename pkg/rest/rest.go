@@ -9,6 +9,10 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+var (
+	respond = sendResp
+)
+
 const (
 	failure = "Service can not be reached!"
 )
@@ -17,13 +21,15 @@ type REST[T any] struct {
 	url       string
 	data      T
 	formatter func(payload T) string
+	client    *http.Client
 	def       *discordgo.ApplicationCommand
 }
 
-func New[T any](definition *discordgo.ApplicationCommand, url string, form func(payload T) string) *REST[T] {
+func New[T any](definition *discordgo.ApplicationCommand, url string, client *http.Client, form func(payload T) string) *REST[T] {
 	result := REST[T]{
 		def:       definition,
 		url:       url,
+		client:    client,
 		formatter: form,
 	}
 
@@ -42,7 +48,7 @@ func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.Interactio
 		}
 	}
 
-	response, err := http.Get(fmt.Sprintf(cmd.url, args...))
+	response, err := cmd.client.Get(fmt.Sprintf(cmd.url, args...))
 	if err != nil {
 		return err
 	}
@@ -68,10 +74,12 @@ func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.Interactio
 		return err
 	}
 
-	sess.InteractionRespond(inter.Interaction, cmd.createReponse())
+	respond(sess, inter.Interaction, cmd.createReponse())
+
 	return nil
 }
 
+// Seam functions for testing
 func (cmd *REST[T]) createReponse() *discordgo.InteractionResponse {
 	return &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -79,4 +87,8 @@ func (cmd *REST[T]) createReponse() *discordgo.InteractionResponse {
 			Content: cmd.formatter(cmd.data),
 		},
 	}
+}
+
+func sendResp(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) {
+	sess.InteractionRespond(inter, resp)
 }
