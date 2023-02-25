@@ -2,6 +2,7 @@ package rest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,7 +20,6 @@ const (
 
 type REST[T any] struct {
 	url       string
-	data      T
 	formatter func(payload T) string
 	client    *http.Client
 	def       *discordgo.ApplicationCommand
@@ -42,6 +42,7 @@ func (cmd *REST[T]) Definition() *discordgo.ApplicationCommand {
 
 func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
 	var args []any
+	var data T
 	for _, v := range inter.ApplicationCommandData().Options {
 		if v.Type == discordgo.ApplicationCommandOptionString {
 			args = append(args, v.Value)
@@ -54,37 +55,37 @@ func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.Interactio
 	}
 
 	if response.StatusCode != http.StatusOK {
-		sess.InteractionRespond(inter.Interaction, &discordgo.InteractionResponse{
+		interResp := &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: failure,
 				Flags:   discordgo.MessageFlagsEphemeral,
 			},
-		})
+		}
 
-		return nil
+		respond(sess, inter.Interaction, interResp)
+		return errors.New("Call to URI failed!")
 	}
 
 	defer response.Body.Close()
 	content, _ := io.ReadAll(response.Body)
 
-	err = json.Unmarshal(content, &cmd.data)
+	err = json.Unmarshal(content, &data)
 
 	if err != nil {
 		return err
 	}
 
-	respond(sess, inter.Interaction, cmd.createReponse())
-
+	respond(sess, inter.Interaction, cmd.createReponse(data))
 	return nil
 }
 
 // Seam functions for testing
-func (cmd *REST[T]) createReponse() *discordgo.InteractionResponse {
+func (cmd *REST[T]) createReponse(data T) *discordgo.InteractionResponse {
 	return &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: cmd.formatter(cmd.data),
+			Content: cmd.formatter(data),
 		},
 	}
 }

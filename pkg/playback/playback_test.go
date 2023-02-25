@@ -16,7 +16,7 @@ func TestDefinition(t *testing.T) {
 	}
 
 	if target.Definition() == nil {
-		t.Error("This should not be nil!")
+		t.Fatal("This should not be nil!")
 	}
 }
 
@@ -30,13 +30,13 @@ func TestPlaySound(t *testing.T) {
 	err := playSound(testChan, fh)
 
 	if err != nil {
-		t.Error("This should be nil!")
+		t.Fatal("This should be nil!")
 	}
 
 	packet := <-testChan
 
 	if packet == nil {
-		t.Error("This should not be nil!")
+		t.Fatal("This should not be nil!")
 	}
 }
 
@@ -47,7 +47,7 @@ func TestPlaySound_WithError(t *testing.T) {
 	err := playSound(make(chan<- []byte), fh)
 
 	if err == nil {
-		t.Error("This should not be nil!")
+		t.Fatal("This should not be nil!")
 	}
 }
 
@@ -67,11 +67,11 @@ func TestGetAudioSource(t *testing.T) {
 			res, err := getAudioSource(tc.path)
 
 			if err != nil && !tc.shouldFail {
-				t.Error("Should not fail!")
+				t.Fatal(err)
 			}
 
 			if tc.shouldFail == false && res == nil {
-				t.Error("Should not be nil!")
+				t.Fatal("Should not be nil!")
 			}
 		})
 	}
@@ -108,16 +108,16 @@ func TestHandler(t *testing.T) {
 	err := target.Handler(&discordgo.Session{}, inter)
 
 	if err == nil {
-		t.Error("Should not be emtty!")
+		t.Fatal("Should not be emtty!")
 	}
 	entry, ok := target.storage.Load("test")
 
 	if !ok {
-		t.Error("Missing entry from map!")
+		t.Fatal("Missing entry from map!")
 	}
 
 	if entry.(*sync.Mutex) == nil {
-		t.Error("Missing mutex!")
+		t.Fatal("Missing mutex!")
 	}
 }
 

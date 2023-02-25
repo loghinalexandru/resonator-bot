@@ -16,11 +16,47 @@ const (
 type TestStruct struct {
 }
 
+func TestHandler_WhenCallFails(t *testing.T) {
+	t.Parallel()
+
+	respond = sendRespMock
+	var cmdInter *discordgo.InteractionCreate
+
+	client := NewTestClient(func(req *http.Request) *http.Response {
+		return &http.Response{
+			StatusCode: 500,
+			Body:       io.NopCloser(bytes.NewBufferString("{}")),
+			Header:     make(http.Header),
+		}
+	})
+
+	cmdInter = &discordgo.InteractionCreate{
+		Interaction: &discordgo.Interaction{
+			Type: discordgo.InteractionApplicationCommandAutocomplete,
+			Data: discordgo.ApplicationCommandInteractionData{
+				Options: []*discordgo.ApplicationCommandInteractionDataOption{},
+			},
+		},
+	}
+
+	target := REST[TestStruct]{
+		client: client,
+		formatter: func(payload TestStruct) string {
+			return tstMessage
+		},
+	}
+
+	err := target.Handler(&discordgo.Session{}, cmdInter)
+
+	if err == nil || err.Error() != "Call to URI failed!" {
+		t.Fatal(err)
+	}
+}
+
 func TestHandler(t *testing.T) {
 	t.Parallel()
 
 	respond = sendRespMock
-	var testPayload TestStruct
 	var cmdInter *discordgo.InteractionCreate
 
 	client := NewTestClient(func(req *http.Request) *http.Response {
@@ -41,7 +77,6 @@ func TestHandler(t *testing.T) {
 	}
 
 	target := REST[TestStruct]{
-		data:   testPayload,
 		client: client,
 		formatter: func(payload TestStruct) string {
 			return tstMessage
@@ -51,7 +86,7 @@ func TestHandler(t *testing.T) {
 	err := target.Handler(&discordgo.Session{}, cmdInter)
 
 	if err != nil {
-		t.Error("Should not be nil!")
+		t.Fatal("Should not be nil!")
 	}
 }
 
@@ -60,13 +95,12 @@ func TestCreateResponse(t *testing.T) {
 
 	var testPayload TestStruct
 	target := &REST[TestStruct]{
-		data: testPayload,
 		formatter: func(payload TestStruct) string {
 			return tstMessage
 		},
 	}
 
-	res := target.createReponse()
+	res := target.createReponse(testPayload)
 
 	if res.Data.Content != tstMessage {
 		t.Error("Reponse message does not match!")
