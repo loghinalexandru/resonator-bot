@@ -1,26 +1,29 @@
 package main
 
 import (
-	"log"
-
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/pkg/logging"
 )
 
-func Join(logger *log.Logger) func(*discordgo.Session, *discordgo.GuildCreate) {
+func Join(logger *logging.Logger) func(*discordgo.Session, *discordgo.GuildCreate) {
 	return func(sess *discordgo.Session, gld *discordgo.GuildCreate) {
-		logger.Printf("Joined guild with ID %v \n", gld.ID)
+		logger.Info("Joined guild with ID", gld.ID)
 	}
 }
 
-func InteractionCreate(logger *log.Logger) func(*discordgo.Session, *discordgo.InteractionCreate) {
-	commands := CmdTable()
+func InteractionCreate(cmds []CustomCommandDef, logger *logging.Logger) func(*discordgo.Session, *discordgo.InteractionCreate) {
+	var commandsTable = make(map[string]CustomCommandDef)
+
+	for _, cmd := range cmds {
+		commandsTable[cmd.Definition().Name] = cmd
+	}
 
 	return func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-		if cmd, ok := commands[interaction.ApplicationCommandData().Name]; ok {
+		if cmd, ok := commandsTable[interaction.ApplicationCommandData().Name]; ok {
 			err := cmd.Handler(session, interaction)
 
 			if err != nil {
-				logger.Println(err)
+				logger.Error(err)
 			}
 		}
 	}

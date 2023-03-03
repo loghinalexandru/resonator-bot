@@ -10,34 +10,37 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/internal/commands"
+	"github.com/loghinalexandru/resonator/pkg/logging"
 )
 
-var (
-	logger       *log.Logger
-	token        string
-	swearsApiURL string
-	cmdSync      sync.Map
-	cmds         []CustomCommandDef
-)
-
-func init() {
-	logger = log.Default()
-	logger.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
-
-	var success bool
-	token, success = os.LookupEnv("BOT_TOKEN")
+func readEnv() (string, string) {
+	token, success := os.LookupEnv("BOT_TOKEN")
 
 	if !success {
 		token = ""
 	}
 
-	swearsApiURL, success = os.LookupEnv("SWEARS_API_URL")
+	swearsApiURL, success := os.LookupEnv("SWEARS_API_URL")
 
 	if !success {
 		swearsApiURL = ""
 	}
 
-	cmds = []CustomCommandDef{
+	return token, swearsApiURL
+}
+
+func getIntents() discordgo.Intent {
+	return discordgo.IntentsGuilds | discordgo.IntentsGuildMessages | discordgo.IntentsGuildVoiceStates
+}
+
+func main() {
+	token, swearsApiURL := readEnv()
+
+	session, sessionError := discordgo.New("Bot " + token)
+	logger := logging.New(logging.Info, log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile))
+
+	cmdSync := sync.Map{}
+	cmds := []CustomCommandDef{
 		commands.NewPlay(&cmdSync),
 		commands.NewReact(&cmdSync),
 		commands.NewRo(&cmdSync),
@@ -47,28 +50,18 @@ func init() {
 		commands.NewManga(http.DefaultClient),
 		commands.NewQuote(http.DefaultClient),
 	}
-}
 
-func getIntents() discordgo.Intent {
-	return discordgo.IntentsGuilds | discordgo.IntentsGuildMessages | discordgo.IntentsGuildVoiceStates
-}
-
-func getHandlers() []interface{} {
-	return []any{
+	handlers := []any{
 		Join(logger),
-		InteractionCreate(logger),
+		InteractionCreate(cmds, logger),
 	}
-}
-
-func main() {
-	session, sessionError := discordgo.New("Bot " + token)
 
 	if sessionError != nil {
-		logger.Println(sessionError)
+		logger.Error(sessionError)
 		return
 	}
 
-	for _, handler := range getHandlers() {
+	for _, handler := range handlers {
 		session.AddHandler(handler)
 	}
 
@@ -78,20 +71,19 @@ func main() {
 	defer session.Close()
 
 	if socketError != nil {
-		logger.Println(socketError)
+		logger.Error(socketError)
 		return
 	}
 
-	logger.Println("Bot is ready!")
-	logger.Println("Bot ShardId: ", session.ShardID)
-	logger.Println("Bot ShardCount: ", session.ShardCount)
+	logger.Info("Bot is ready!")
+	logger.Info("Bot ShardId: ", session.ShardID)
+	logger.Info("Bot ShardCount: ", session.ShardCount)
 
-	for _, command := range CmdTable() {
-		_, err := session.ApplicationCommandCreate(
-			session.State.User.ID, "", command.Definition())
+	for _, command := range cmds {
+		_, err := session.ApplicationCommandCreate(session.State.User.ID, "", command.Definition())
 
 		if err != nil {
-			logger.Println(err)
+			logger.Error(err)
 		}
 	}
 
