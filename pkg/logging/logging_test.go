@@ -33,7 +33,7 @@ func TestMinLogLevel(t *testing.T) {
 
 func TestStrLogLevel(t *testing.T) {
 	tableTst := []struct {
-		lvl      logLevel
+		lvl      LogLevel
 		expected string
 	}{
 		{

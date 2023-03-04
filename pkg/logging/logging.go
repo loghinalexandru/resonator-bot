@@ -5,10 +5,10 @@ import (
 	"log"
 )
 
-type logLevel int
+type LogLevel int
 
 const (
-	Debug logLevel = iota + 1
+	Debug LogLevel = iota + 1
 	Info
 	Warning
 	Error
@@ -16,17 +16,17 @@ const (
 
 type Logger struct {
 	logger *log.Logger
-	minLvl logLevel
+	minLvl LogLevel
 }
 
-func New(lvl logLevel, logger *log.Logger) *Logger {
+func New(lvl LogLevel, logger *log.Logger) *Logger {
 	return &Logger{
 		minLvl: lvl,
 		logger: logger,
 	}
 }
 
-func (log *Logger) logInternal(lvl logLevel, args ...any) {
+func (log *Logger) logInternal(lvl LogLevel, args ...any) {
 	if lvl >= log.minLvl {
 		log.logger.Println(fmt.Sprintf("%v: %v", strLogLevel(lvl), fmt.Sprint(args...)))
 	}
@@ -48,7 +48,7 @@ func (log *Logger) Error(args ...any) {
 	log.logInternal(Error, args...)
 }
 
-func strLogLevel(lvl logLevel) string {
+func strLogLevel(lvl LogLevel) string {
 	switch lvl {
 	case Debug:
 		return "DEBUG"

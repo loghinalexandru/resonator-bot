@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"sync"
 	"syscall"
 
@@ -13,20 +14,20 @@ import (
 	"github.com/loghinalexandru/resonator/pkg/logging"
 )
 
-func readEnv() (string, string) {
-	token, success := os.LookupEnv("BOT_TOKEN")
+var (
+	token        string
+	swearsApiURL string
+	logLevel     logging.LogLevel
+	shardID      int = 0
+	shardCount   int = 1
+)
 
-	if !success {
-		token = ""
-	}
+func loadEnv() {
+	token = os.Getenv("BOT_TOKEN")
+	swearsApiURL = os.Getenv("SWEARS_API_URL")
 
-	swearsApiURL, success := os.LookupEnv("SWEARS_API_URL")
-
-	if !success {
-		swearsApiURL = ""
-	}
-
-	return token, swearsApiURL
+	lvl, _ := strconv.Atoi(os.Getenv("LOG_LEVEL"))
+	logLevel = logging.LogLevel(lvl)
 }
 
 func getIntents() discordgo.Intent {
@@ -34,10 +35,10 @@ func getIntents() discordgo.Intent {
 }
 
 func main() {
-	token, swearsApiURL := readEnv()
+	loadEnv()
 
 	session, sessionError := discordgo.New("Bot " + token)
-	logger := logging.New(logging.Info, log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile))
+	logger := logging.New(logLevel, log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile))
 
 	cmdSync := sync.Map{}
 	cmds := []CustomCommandDef{
@@ -66,6 +67,8 @@ func main() {
 	}
 
 	session.Identify.Intents = getIntents()
+	session.ShardID = shardID
+	session.ShardCount = shardCount
 
 	socketError := session.Open()
 	defer session.Close()
