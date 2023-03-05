@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -28,6 +29,10 @@ func loadEnv() {
 
 	lvl, _ := strconv.Atoi(os.Getenv("LOG_LEVEL"))
 	logLevel = logging.LogLevel(lvl)
+
+	shardCount, _ = strconv.Atoi(os.Getenv("SHARD_COUNT"))
+	index := strings.Split(os.Getenv("SHARD_ID"), "-")
+	shardID, _ = strconv.Atoi(index[len(index)-1])
 }
 
 func getIntents() discordgo.Intent {
