@@ -28,7 +28,7 @@ func New(lvl LogLevel, logger *log.Logger) *Logger {
 
 func (log *Logger) logInternal(lvl LogLevel, args ...any) {
 	if lvl >= log.minLvl {
-		log.logger.Println(fmt.Sprintf("%v: %v", strLogLevel(lvl), fmt.Sprint(args...)))
+		log.logger.Printf(fmt.Sprintf("%v: %v", strLogLevel(lvl), fmt.Sprint(args...)))
 	}
 }
 

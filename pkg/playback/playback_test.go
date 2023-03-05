@@ -137,5 +137,4 @@ func getGuildMock(sess *discordgo.Session, inter *discordgo.InteractionCreate) (
 }
 
 func sendRespMock(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
-	return
 }

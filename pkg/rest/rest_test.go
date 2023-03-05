@@ -48,7 +48,7 @@ func TestHandler_WhenCallFails(t *testing.T) {
 
 	err := target.Handler(&discordgo.Session{}, cmdInter)
 
-	if err == nil || err.Error() != "Call to URI failed!" {
+	if err == nil || err.Error() != "call to URI failed" {
 		t.Fatal(err)
 	}
 }
@@ -120,5 +120,4 @@ func NewTestClient(fn RoundTripFunc) *http.Client {
 }
 
 func sendRespMock(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) {
-	return
 }

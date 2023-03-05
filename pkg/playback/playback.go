@@ -114,7 +114,7 @@ func getAudioSource(path string) (io.ReadCloser, error) {
 
 func playSound(soundBuff chan<- []byte, fh io.Reader) error {
 	if fh == nil {
-		return errors.New("Null file handler!")
+		return errors.New("null file handler")
 	}
 
 	decoder := dca.NewDecoder(fh)
@@ -131,7 +131,7 @@ func playSound(soundBuff chan<- []byte, fh io.Reader) error {
 		select {
 		case soundBuff <- frame:
 		case <-time.After(2 * time.Second):
-			return errors.New("Timeout!")
+			return errors.New("timeout")
 		}
 	}
 
@@ -139,16 +139,6 @@ func playSound(soundBuff chan<- []byte, fh io.Reader) error {
 }
 
 // Seam functions for testing purposes
-func sendResponse(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
-	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: msg,
-			Flags:   discordgo.MessageFlagsEphemeral,
-		},
-	})
-}
-
 func joinVoice(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
 	return sess.ChannelVoiceJoin(guildID, voiceID, mute, deaf)
 }
