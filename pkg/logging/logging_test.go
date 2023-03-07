@@ -2,6 +2,7 @@ package logging
 
 import (
 	"log"
+	"math"
 	"strings"
 	"testing"
 )
@@ -31,7 +32,7 @@ func TestMinLogLevel(t *testing.T) {
 	}
 }
 
-func TestStrLogLevel(t *testing.T) {
+func TestToStr(t *testing.T) {
 	tableTst := []struct {
 		lvl      LogLevel
 		expected string
@@ -55,12 +56,70 @@ func TestStrLogLevel(t *testing.T) {
 	}
 
 	for _, test := range tableTst {
-		t.Run("LogLevel", func(t *testing.T) {
-			result := strLogLevel(test.lvl)
+		t.Run("ToStr", func(t *testing.T) {
+			result := ToStr(test.lvl)
 
 			if result != test.expected {
 				t.Fatal("Invalid LogLevel!")
 			}
 		})
 	}
+}
+
+func TestToStr_WithPanic(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("The code did not panic")
+		}
+	}()
+
+	ToStr(LogLevel(math.MaxInt32))
+}
+
+func TestToLogLevel(t *testing.T) {
+	tableTst := []struct {
+		lvl      string
+		expected LogLevel
+	}{
+		{
+			lvl:      "  deBug ",
+			expected: Debug,
+		},
+		{
+			lvl:      "info",
+			expected: Info,
+		},
+		{
+			lvl:      " warNing",
+			expected: Warning,
+		},
+		{
+			lvl:      "error",
+			expected: Error,
+		},
+	}
+
+	for _, test := range tableTst {
+		t.Run("ToLogLevel", func(t *testing.T) {
+			result := ToLogLevel(test.lvl)
+
+			if result != test.expected {
+				t.Fatal("Invalid LogLevel!")
+			}
+		})
+	}
+}
+
+func TestToLogLevel_WithPanic(t *testing.T) {
+	t.Parallel()
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("The code did not panic")
+		}
+	}()
+
+	ToLogLevel("random_string")
 }

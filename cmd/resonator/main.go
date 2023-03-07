@@ -26,9 +26,7 @@ var (
 func loadEnv() {
 	token = os.Getenv("BOT_TOKEN")
 	swearsApiURL = os.Getenv("SWEARS_API_URL")
-
-	lvl, _ := strconv.Atoi(os.Getenv("LOG_LEVEL"))
-	logLevel = logging.LogLevel(lvl)
+	logLevel = logging.ToLogLevel(os.Getenv("LOG_LEVEL"))
 
 	shardCount, _ = strconv.Atoi(os.Getenv("SHARD_COUNT"))
 	index := strings.Split(os.Getenv("SHARD_ID"), "-")

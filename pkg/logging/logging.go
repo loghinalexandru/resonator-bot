@@ -3,6 +3,7 @@ package logging
 import (
 	"fmt"
 	"log"
+	"strings"
 )
 
 type LogLevel int
@@ -28,7 +29,7 @@ func New(lvl LogLevel, logger *log.Logger) *Logger {
 
 func (log *Logger) logInternal(lvl LogLevel, args ...any) {
 	if lvl >= log.minLvl {
-		log.logger.Printf(fmt.Sprintf("%v: %v", strLogLevel(lvl), fmt.Sprint(args...)))
+		log.logger.Printf(fmt.Sprintf("%v: %v", ToStr(lvl), fmt.Sprint(args...)))
 	}
 }
 
@@ -48,7 +49,7 @@ func (log *Logger) Error(args ...any) {
 	log.logInternal(Error, args...)
 }
 
-func strLogLevel(lvl LogLevel) string {
+func ToStr(lvl LogLevel) string {
 	switch lvl {
 	case Debug:
 		return "DEBUG"
@@ -59,6 +60,23 @@ func strLogLevel(lvl LogLevel) string {
 	case Error:
 		return "ERROR"
 	default:
-		panic("Unknown log level!")
+		panic("invalid value")
+	}
+}
+
+func ToLogLevel(lvl string) LogLevel {
+	sanitizedLvl := strings.ToUpper(strings.TrimSpace(lvl))
+
+	switch sanitizedLvl {
+	case "DEBUG":
+		return Debug
+	case "INFO":
+		return Info
+	case "WARNING":
+		return Warning
+	case "ERROR":
+		return Error
+	default:
+		panic("invalid value")
 	}
 }
