@@ -42,14 +42,16 @@ func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
 }
 
 func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
-	var botvc *discordgo.VoiceConnection
 	var err error
 
 	guild, _ := guild(sess, inter)
+	botvc, ok := sess.VoiceConnections[guild.ID]
 
-	for _, vc := range guild.VoiceStates {
-		if inter.Member.User.ID == vc.UserID {
-			botvc, err = voice(sess, guild.ID, vc.ChannelID, false, true)
+	if !ok {
+		for _, vc := range guild.VoiceStates {
+			if inter.Member.User.ID == vc.UserID {
+				botvc, err = voice(sess, guild.ID, vc.ChannelID, false, true)
+			}
 		}
 	}
 
