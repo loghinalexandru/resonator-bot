@@ -51,6 +51,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 		for _, vc := range guild.VoiceStates {
 			if inter.Member.User.ID == vc.UserID {
 				botvc, err = voice(sess, guild.ID, vc.ChannelID, false, true)
+				botvc.LogLevel = discordgo.LogDebug
 			}
 		}
 	}
