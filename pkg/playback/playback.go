@@ -45,9 +45,9 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	var err error
 
 	guild, _ := guild(sess, inter)
-	botvc, ok := sess.VoiceConnections[guild.ID]
+	botvc, exists := sess.VoiceConnections[guild.ID]
 
-	if !ok {
+	if !exists {
 		for _, vc := range guild.VoiceStates {
 			if inter.Member.User.ID == vc.UserID {
 				botvc, err = voice(sess, guild.ID, vc.ChannelID, false, true)
@@ -83,7 +83,6 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 		return err
 	}
 
-	defer input.Close()
 	err = playSound(botvc.OpusSend, input)
 
 	if err != nil {
@@ -115,11 +114,12 @@ func getAudioSource(path string) (io.ReadCloser, error) {
 	return res.Body, nil
 }
 
-func playSound(soundBuff chan<- []byte, fh io.Reader) error {
+func playSound(soundBuff chan<- []byte, fh io.ReadCloser) error {
 	if fh == nil {
-		return errors.New("null file handler")
+		return errors.New("nil file handler")
 	}
 
+	defer fh.Close()
 	decoder := dca.NewDecoder(fh)
 
 	for {
@@ -134,7 +134,7 @@ func playSound(soundBuff chan<- []byte, fh io.Reader) error {
 		select {
 		case soundBuff <- frame:
 		case <-time.After(2 * time.Second):
-			return errors.New("timeout")
+			return errors.New("opus frame timeout")
 		}
 	}
 

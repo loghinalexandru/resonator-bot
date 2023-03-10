@@ -41,6 +41,9 @@ func main() {
 	loadEnv()
 
 	session, sessionError := discordgo.New("Bot " + token)
+	session.LogLevel = discordgo.LogDebug
+	session.ShouldReconnectOnError = false
+
 	logger := logging.New(logLevel, log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile))
 
 	cmdSync := sync.Map{}

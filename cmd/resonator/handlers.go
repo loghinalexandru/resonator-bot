@@ -7,7 +7,7 @@ import (
 
 func Join(logger *logging.Logger) func(*discordgo.Session, *discordgo.GuildCreate) {
 	return func(sess *discordgo.Session, gld *discordgo.GuildCreate) {
-		logger.Info("Joined guild with ID", gld.ID)
+		logger.Info("Joined guild with ID: ", gld.ID)
 	}
 }
 
