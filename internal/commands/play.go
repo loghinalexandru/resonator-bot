@@ -57,6 +57,10 @@ func NewPlay(sync *sync.Map) *playback.Playback {
 						Name:  "Fast AF",
 						Value: "misc/fastaf.dca",
 					},
+					{
+						Name:  "City Boy",
+						Value: "misc/cityboy.dca",
+					},
 				},
 				Required: true,
 			},

@@ -93,6 +93,14 @@ func NewRo(sync *sync.Map) *playback.Playback {
 						Name:  "E de la gaze",
 						Value: "misc/delagaze.dca",
 					},
+					{
+						Name:  "Dupa bere",
+						Value: "misc/dupabere.dca",
+					},
+					{
+						Name:  "Am baut sveps",
+						Value: "misc/sveps.dca",
+					},
 				},
 				Required: true,
 			},
