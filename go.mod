@@ -14,4 +14,4 @@ require (
 	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
 )
 
-replace github.com/bwmarrin/discordgo => github.com/loghinalexandru/discordgo v0.27.2
+replace github.com/bwmarrin/discordgo => github.com/loghinalexandru/discordgo v0.0.0-20230313173807-2304d82b1a35
