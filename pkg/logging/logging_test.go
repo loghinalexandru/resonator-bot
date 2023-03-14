@@ -20,19 +20,21 @@ func TestMinLogLevel(t *testing.T) {
 	target.Error()
 
 	if buffer.Len() == 0 {
-		t.Fatal("Valid log level never triggered!")
+		t.Error("valid log level never triggered")
 	}
 
 	if !strings.Contains(buffer.String(), "WARNING:") {
-		t.Fatal("Valid log level never triggered!")
+		t.Error("valid log level never triggered")
 	}
 
 	if !strings.Contains(buffer.String(), "ERROR:") {
-		t.Fatal("Valid log level never triggered!")
+		t.Error("valid log level never triggered")
 	}
 }
 
 func TestToStr(t *testing.T) {
+	t.Parallel()
+
 	tableTst := []struct {
 		lvl      LogLevel
 		expected string
@@ -60,18 +62,18 @@ func TestToStr(t *testing.T) {
 			result := ToStr(test.lvl)
 
 			if result != test.expected {
-				t.Fatal("Invalid LogLevel!")
+				t.Error("invalid LogLevel")
 			}
 		})
 	}
 }
 
-func TestToStr_WithPanic(t *testing.T) {
+func TestToStrWithPanic(t *testing.T) {
 	t.Parallel()
 
 	defer func() {
 		if r := recover(); r == nil {
-			t.Fatal("The code did not panic")
+			t.Error("the code did not panic")
 		}
 	}()
 
@@ -79,6 +81,8 @@ func TestToStr_WithPanic(t *testing.T) {
 }
 
 func TestToLogLevel(t *testing.T) {
+	t.Parallel()
+
 	tableTst := []struct {
 		lvl      string
 		expected LogLevel
@@ -106,18 +110,18 @@ func TestToLogLevel(t *testing.T) {
 			result := ToLogLevel(test.lvl)
 
 			if result != test.expected {
-				t.Fatal("Invalid LogLevel!")
+				t.Error("invalid LogLevel")
 			}
 		})
 	}
 }
 
-func TestToLogLevel_WithPanic(t *testing.T) {
+func TestToLogLevelWithPanic(t *testing.T) {
 	t.Parallel()
 
 	defer func() {
 		if r := recover(); r == nil {
-			t.Fatal("The code did not panic")
+			t.Error("the code did not panic")
 		}
 	}()
 

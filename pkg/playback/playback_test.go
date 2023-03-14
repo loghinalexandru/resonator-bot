@@ -16,7 +16,7 @@ func TestDefinition(t *testing.T) {
 	}
 
 	if target.Definition() == nil {
-		t.Fatal("This should not be nil!")
+		t.Error("this should not be nil")
 	}
 }
 
@@ -30,29 +30,31 @@ func TestPlaySound(t *testing.T) {
 	err := playSound(testChan, fh)
 
 	if err != nil {
-		t.Fatal("This should be nil!")
+		t.Fatal(err)
 	}
 
 	packet := <-testChan
 
 	if packet == nil {
-		t.Fatal("This should not be nil!")
+		t.Fatal("this should not be nil")
 	}
 }
 
-func TestPlaySound_WithError(t *testing.T) {
+func TestPlaySoundsWithError(t *testing.T) {
 	t.Parallel()
 
 	fh, _ := os.Open("")
 	err := playSound(make(chan<- []byte), fh)
 
 	if err == nil {
-		t.Fatal("This should not be nil!")
+		t.Error("this should not be nil")
 	}
 }
 
 // TODO: Use a mock RoundTripFunc
 func TestGetAudioSource(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		path       string
 		shouldFail bool
@@ -68,11 +70,11 @@ func TestGetAudioSource(t *testing.T) {
 			res, err := getAudioSource(tc.path)
 
 			if err != nil && !tc.shouldFail {
-				t.Fatal(err)
+				t.Error(err)
 			}
 
 			if tc.shouldFail == false && res == nil {
-				t.Fatal("Should not be nil!")
+				t.Error("should not be nil")
 			}
 		})
 	}
@@ -80,6 +82,7 @@ func TestGetAudioSource(t *testing.T) {
 
 func TestHandler(t *testing.T) {
 	t.Parallel()
+
 	voice = joinVoiceMock
 	guild = getGuildMock
 	respond = sendRespMock
@@ -109,7 +112,7 @@ func TestHandler(t *testing.T) {
 	err := target.Handler(&discordgo.Session{}, inter)
 
 	if err == nil {
-		t.Fatal("Should not be emtty!")
+		t.Fatal("Should not be empty!")
 	}
 	entry, ok := target.storage.Load("test")
 

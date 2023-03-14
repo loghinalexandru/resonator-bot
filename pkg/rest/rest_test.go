@@ -49,7 +49,7 @@ func TestHandler_WhenCallFails(t *testing.T) {
 	err := target.Handler(&discordgo.Session{}, cmdInter)
 
 	if err == nil || err.Error() != "call to URI failed" {
-		t.Fatal(err)
+		t.Error(err)
 	}
 }
 
@@ -86,7 +86,7 @@ func TestHandler(t *testing.T) {
 	err := target.Handler(&discordgo.Session{}, cmdInter)
 
 	if err != nil {
-		t.Fatal("Should not be nil!")
+		t.Error(err)
 	}
 }
 
@@ -100,10 +100,10 @@ func TestCreateResponse(t *testing.T) {
 		},
 	}
 
-	res := target.createReponse(testPayload)
+	got := target.createReponse(testPayload)
 
-	if res.Data.Content != tstMessage {
-		t.Error("Reponse message does not match!")
+	if got.Data.Content != tstMessage {
+		t.Errorf("want %q, got %q", tstMessage, got.Data.Content)
 	}
 }
 
