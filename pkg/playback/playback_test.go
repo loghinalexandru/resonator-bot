@@ -20,7 +20,7 @@ func TestDefinition(t *testing.T) {
 	}
 }
 
-func TestPlaySound(t *testing.T) {
+func TestPlaySoundWithValidFile(t *testing.T) {
 	t.Parallel()
 
 	testChan := make(chan []byte, 100)
@@ -52,35 +52,43 @@ func TestPlaySoundsWithError(t *testing.T) {
 }
 
 // TODO: Use a mock RoundTripFunc
-func TestGetAudioSource(t *testing.T) {
+func TestGetAudioSourceWithInvalidURI(t *testing.T) {
 	t.Parallel()
 
-	tests := []struct {
-		path       string
-		shouldFail bool
-	}{
-		{"", true},
-		{"testdata/test_file.dca", false},
-		{"localhost.com/api", true},
-		{"https://www.google.com/", false},
-	}
+	tests := []string{"", "localhost.com/api"}
 
 	for _, tc := range tests {
-		t.Run(tc.path, func(t *testing.T) {
-			res, err := getAudioSource(tc.path)
+		t.Run(tc, func(t *testing.T) {
+			_, err := getAudioSource(tc)
 
-			if err != nil && !tc.shouldFail {
+			if err == nil {
 				t.Error(err)
 			}
+		})
+	}
+}
 
-			if tc.shouldFail == false && res == nil {
+func TestGetAudioSourceWithValidURI(t *testing.T) {
+	t.Parallel()
+
+	tests := []string{"testdata/test_file.dca", "https://www.google.com/"}
+
+	for _, tc := range tests {
+		t.Run(tc, func(t *testing.T) {
+			res, err := getAudioSource(tc)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if res == nil {
 				t.Error("should not be nil")
 			}
 		})
 	}
 }
 
-func TestHandler(t *testing.T) {
+func TestHandlerWhenCalledCreatesMutex(t *testing.T) {
 	t.Parallel()
 
 	voice = joinVoiceMock
@@ -112,16 +120,16 @@ func TestHandler(t *testing.T) {
 	err := target.Handler(&discordgo.Session{}, inter)
 
 	if err == nil {
-		t.Fatal("Should not be empty!")
+		t.Fatal("should not be empty")
 	}
 	entry, ok := target.storage.Load("test")
 
 	if !ok {
-		t.Fatal("Missing entry from map!")
+		t.Fatal("missing entry from map")
 	}
 
 	if entry.(*sync.Mutex) == nil {
-		t.Fatal("Missing mutex!")
+		t.Fatal("missing mutex")
 	}
 }
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestMinLogLevel(t *testing.T) {
+func TestMinLogLevelLogsOnlyWarningAndAbove(t *testing.T) {
 	t.Parallel()
 
 	buffer := &strings.Builder{}
@@ -32,43 +32,43 @@ func TestMinLogLevel(t *testing.T) {
 	}
 }
 
-func TestToStr(t *testing.T) {
+func TestToStrWithValidInput(t *testing.T) {
 	t.Parallel()
 
 	tableTst := []struct {
-		lvl      LogLevel
-		expected string
+		lvl  LogLevel
+		want string
 	}{
 		{
-			lvl:      Debug,
-			expected: "DEBUG",
+			lvl:  Debug,
+			want: "DEBUG",
 		},
 		{
-			lvl:      Info,
-			expected: "INFO",
+			lvl:  Info,
+			want: "INFO",
 		},
 		{
-			lvl:      Warning,
-			expected: "WARNING",
+			lvl:  Warning,
+			want: "WARNING",
 		},
 		{
-			lvl:      Error,
-			expected: "ERROR",
+			lvl:  Error,
+			want: "ERROR",
 		},
 	}
 
 	for _, test := range tableTst {
 		t.Run("ToStr", func(t *testing.T) {
-			result := ToStr(test.lvl)
+			got := ToStr(test.lvl)
 
-			if result != test.expected {
+			if got != test.want {
 				t.Error("invalid LogLevel")
 			}
 		})
 	}
 }
 
-func TestToStrWithPanic(t *testing.T) {
+func TestToStrWithInvalidInputPanics(t *testing.T) {
 	t.Parallel()
 
 	defer func() {
@@ -80,43 +80,43 @@ func TestToStrWithPanic(t *testing.T) {
 	ToStr(LogLevel(math.MaxInt32))
 }
 
-func TestToLogLevel(t *testing.T) {
+func TestToLogLevelWithValidInput(t *testing.T) {
 	t.Parallel()
 
 	tableTst := []struct {
-		lvl      string
-		expected LogLevel
+		lvl  string
+		want LogLevel
 	}{
 		{
-			lvl:      "  deBug ",
-			expected: Debug,
+			lvl:  "  deBug ",
+			want: Debug,
 		},
 		{
-			lvl:      "info",
-			expected: Info,
+			lvl:  "info",
+			want: Info,
 		},
 		{
-			lvl:      " warNing",
-			expected: Warning,
+			lvl:  " warNing",
+			want: Warning,
 		},
 		{
-			lvl:      "error",
-			expected: Error,
+			lvl:  "error",
+			want: Error,
 		},
 	}
 
 	for _, test := range tableTst {
 		t.Run("ToLogLevel", func(t *testing.T) {
-			result := ToLogLevel(test.lvl)
+			got := ToLogLevel(test.lvl)
 
-			if result != test.expected {
+			if got != test.want {
 				t.Error("invalid LogLevel")
 			}
 		})
 	}
 }
 
-func TestToLogLevelWithPanic(t *testing.T) {
+func TestToLogLevelWithInvalidInputPanics(t *testing.T) {
 	t.Parallel()
 
 	defer func() {
