@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
@@ -18,19 +17,27 @@ import (
 var (
 	token        string
 	swearsApiURL string
-	logLevel     logging.LogLevel
-	shardID      int = 0
-	shardCount   int = 1
+	logLevel     logging.LogLevel = logging.Info
+	shardID      int              = 0
+	shardCount   int              = 1
 )
 
 func loadEnv() {
 	token = os.Getenv("BOT_TOKEN")
 	swearsApiURL = os.Getenv("SWEARS_API_URL")
-	logLevel = logging.ToLogLevel(os.Getenv("LOG_LEVEL"))
 
-	shardCount, _ = strconv.Atoi(os.Getenv("SHARD_COUNT"))
-	index := strings.Split(os.Getenv("SHARD_ID"), "-")
-	shardID, _ = strconv.Atoi(index[len(index)-1])
+	if lvl := os.Getenv("LOG_LEVEL"); lvl != "" {
+		logLevel = logging.ToLogLevel(lvl)
+	}
+
+	if replicas := os.Getenv("SHARD_COUNT"); replicas != "" {
+		shardCount, _ = strconv.Atoi(replicas)
+	}
+
+	if replicaID := os.Getenv("SHARD_ID"); replicaID != "" {
+		index := strings.Split(replicaID, "-")
+		shardID, _ = strconv.Atoi(index[len(index)-1])
+	}
 }
 
 func getIntents() discordgo.Intent {
@@ -51,10 +58,10 @@ func main() {
 		commands.NewReact(&cmdSync),
 		commands.NewRo(&cmdSync),
 		commands.NewCurse(&cmdSync, swearsApiURL),
-		commands.NewSwear(swearsApiURL, http.DefaultClient),
-		commands.NewAnime(http.DefaultClient),
-		commands.NewManga(http.DefaultClient),
-		commands.NewQuote(http.DefaultClient),
+		commands.NewSwear(swearsApiURL),
+		commands.NewAnime(),
+		commands.NewManga(),
+		commands.NewQuote(),
 	}
 
 	handlers := []any{

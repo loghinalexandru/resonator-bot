@@ -13,14 +13,14 @@ type quoteData struct {
 	Quote string `json:"quote"`
 }
 
-func NewQuote(client *http.Client) *rest.REST[quoteData] {
+func NewQuote() *rest.REST[quoteData] {
 	url := "https://api.kanye.rest/"
 	def := &discordgo.ApplicationCommand{
 		Name:        "quote",
 		Description: "This command is used find Kanye West quotes!",
 	}
 
-	return rest.New(def, url, client, quoteFormatter)
+	return rest.New(def, url, http.DefaultClient, quoteFormatter)
 }
 
 func quoteFormatter(content quoteData) string {

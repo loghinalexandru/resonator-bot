@@ -14,7 +14,7 @@ type SwearData struct {
 	Lang  string `json:"lang"`
 }
 
-func NewSwear(swearsURL string, client *http.Client) *rest.REST[SwearData] {
+func NewSwear(swearsURL string) *rest.REST[SwearData] {
 	url := swearsURL + "/api/random?lang=%v"
 	def := &discordgo.ApplicationCommand{
 		Name:        "swear",
@@ -43,7 +43,7 @@ func NewSwear(swearsURL string, client *http.Client) *rest.REST[SwearData] {
 		},
 	}
 
-	return rest.New(def, url, client, swearFormatter)
+	return rest.New(def, url, http.DefaultClient, swearFormatter)
 }
 
 func swearFormatter(resp SwearData) string {
