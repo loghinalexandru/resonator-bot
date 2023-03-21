@@ -76,7 +76,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	respond(sess, inter, exec)
 
 	path := inter.ApplicationCommandData().Options[0].Value.(string)
-	input, err := getAudioSource(path)
+	input, err := getAudioSource(path, http.DefaultClient)
 
 	if err != nil {
 		return err
@@ -91,7 +91,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	return nil
 }
 
-func getAudioSource(path string) (io.ReadCloser, error) {
+func getAudioSource(path string, client *http.Client) (io.ReadCloser, error) {
 	url, err := url.Parse(path)
 
 	if err != nil || url.Scheme == "" || url.Host == "" {
@@ -104,7 +104,7 @@ func getAudioSource(path string) (io.ReadCloser, error) {
 		return res, nil
 	}
 
-	res, err := http.Get(url.String())
+	res, err := client.Get(url.String())
 
 	if err != nil {
 		return nil, err

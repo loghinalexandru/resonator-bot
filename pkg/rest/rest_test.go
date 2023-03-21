@@ -16,13 +16,56 @@ const (
 type TestStruct struct {
 }
 
-func TestHandler_WhenCallFails(t *testing.T) {
+func TestNew(t *testing.T) {
+	testDef := &discordgo.ApplicationCommand{
+		ID: "testDef",
+	}
+	testURL := "test"
+
+	got := New(
+		testDef,
+		testURL,
+		http.DefaultClient,
+		func(payload TestStruct) string {
+			return "test"
+		})
+
+	if got.def != testDef {
+		t.Error("different command definition")
+	}
+
+	if got.url != testURL {
+		t.Error("different command url")
+	}
+
+	if got.client != http.DefaultClient {
+		t.Error("different command http client")
+	}
+
+	if got.formatter == nil {
+		t.Error("different command formatter")
+	}
+}
+
+func TestDefinition(t *testing.T) {
+	t.Parallel()
+
+	target := &REST[TestStruct]{
+		def: &discordgo.ApplicationCommand{},
+	}
+
+	if target.Definition() == nil {
+		t.Error("this should not be nil")
+	}
+}
+
+func TestHandlerWhenCallFails(t *testing.T) {
 	t.Parallel()
 
 	respond = sendRespMock
 	var cmdInter *discordgo.InteractionCreate
 
-	client := NewTestClient(func(req *http.Request) *http.Response {
+	client := newTestClient(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: 500,
 			Body:       io.NopCloser(bytes.NewBufferString("{}")),
@@ -59,7 +102,7 @@ func TestHandler(t *testing.T) {
 	respond = sendRespMock
 	var cmdInter *discordgo.InteractionCreate
 
-	client := NewTestClient(func(req *http.Request) *http.Response {
+	client := newTestClient(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: 200,
 			Body:       io.NopCloser(bytes.NewBufferString("{}")),
@@ -113,7 +156,7 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req), nil
 }
 
-func NewTestClient(fn RoundTripFunc) *http.Client {
+func newTestClient(fn RoundTripFunc) *http.Client {
 	return &http.Client{
 		Transport: RoundTripFunc(fn),
 	}

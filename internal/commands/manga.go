@@ -9,6 +9,10 @@ import (
 	"github.com/loghinalexandru/resonator/pkg/rest"
 )
 
+const (
+	noMatch = "Not match could be found :("
+)
+
 type mangaData struct {
 	Id    string `json:"id"`
 	Stats struct {
@@ -56,7 +60,7 @@ func mangaFormatter(resp mangaWrapper) string {
 			sb.WriteString(fmt.Sprintf("> Volumes: %v, Chapters: %v, Genre: %v\n", r.Stats.Volumes, r.Stats.Chapters, r.Stats.RatingGuide))
 		}
 	} else {
-		sb.WriteString("No match found :(")
+		sb.WriteString(noMatch)
 	}
 
 	return sb.String()
