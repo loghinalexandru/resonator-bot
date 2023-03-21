@@ -61,6 +61,38 @@ func NewPlay(sync *sync.Map) *playback.Playback {
 						Name:  "City Boy",
 						Value: "misc/cityboy.dca",
 					},
+					{
+						Name:  "So good",
+						Value: "misc/sogood.dca",
+					},
+					{
+						Name:  "Why are u running",
+						Value: "misc/whyurunning.dca",
+					},
+					{
+						Name:  "Aw shit",
+						Value: "misc/awshit.dca",
+					},
+					{
+						Name:  "Fuck fuck",
+						Value: "misc/fuck.dca",
+					},
+					{
+						Name:  "Sitcom laugh",
+						Value: "misc/sitcomlaugh.dca",
+					},
+					{
+						Name:  "Law & Order",
+						Value: "misc/lawandorder.dca",
+					},
+					{
+						Name:  "What the fuck",
+						Value: "misc/whatthefuck.dca",
+					},
+					{
+						Name:  "Bloody fuck you",
+						Value: "misc/bloodyfuckyou.dca",
+					},
 				},
 				Required: true,
 			},
