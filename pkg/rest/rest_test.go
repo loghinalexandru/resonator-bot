@@ -17,6 +17,8 @@ type TestStruct struct {
 }
 
 func TestNew(t *testing.T) {
+	t.Parallel()
+
 	testDef := &discordgo.ApplicationCommand{
 		ID: "testDef",
 	}
