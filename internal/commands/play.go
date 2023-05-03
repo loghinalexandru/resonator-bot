@@ -93,6 +93,14 @@ func NewPlay(sync *sync.Map) *playback.Playback {
 						Name:  "Bloody fuck you",
 						Value: "misc/bloodyfuckyou.dca",
 					},
+					{
+						Name:  "I don't want peace!",
+						Value: "misc/iwantproblems.dca",
+					},
+					{
+						Name:  "Why are these fools",
+						Value: "misc/thsefools.dca",
+					},
 				},
 				Required: true,
 			},

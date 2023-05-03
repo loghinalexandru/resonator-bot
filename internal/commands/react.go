@@ -77,6 +77,22 @@ func NewReact(sync *sync.Map) *playback.Playback {
 						Name:  "Fraierii comenteaza ba nene!",
 						Value: "misc/fraieriicomenteaza.dca",
 					},
+					{
+						Name:  "A dat handicaptu'",
+						Value: "misc/cuviteza.dca",
+					},
+					{
+						Name:  "Ioane e pe lung",
+						Value: "misc/pelung.dca",
+					},
+					{
+						Name:  "Minecraft death sound",
+						Value: "misc/ough.dca",
+					},
+					{
+						Name:  "Hai fine bate-te",
+						Value: "misc/haifine.dca",
+					},
 				},
 				Required: true,
 			},

@@ -105,6 +105,10 @@ func NewRo(sync *sync.Map) *playback.Playback {
 						Name:  "Vorbiti civilizat",
 						Value: "misc/vorbiticivilizat.dca",
 					},
+					{
+						Name:  "O pui pe fata",
+						Value: "misc/opuipefata.dca",
+					},
 				},
 				Required: true,
 			},
