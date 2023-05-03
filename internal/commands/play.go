@@ -99,7 +99,7 @@ func NewPlay(sync *sync.Map) *playback.Playback {
 					},
 					{
 						Name:  "Why are these fools",
-						Value: "misc/thsefools.dca",
+						Value: "misc/thesefools.dca",
 					},
 				},
 				Required: true,
