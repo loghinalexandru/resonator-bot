@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"sync"
 	"time"
@@ -25,15 +24,30 @@ var (
 	respond = sendResp
 )
 
+type playbackOpt func(*Playback)
+
 type Playback struct {
 	storage *sync.Map
+	url     string
 	def     *discordgo.ApplicationCommand
 }
 
-func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand) *Playback {
-	return &Playback{
+func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...playbackOpt) *Playback {
+	result := &Playback{
 		def:     definition,
 		storage: syncMap,
+	}
+
+	for _, opt := range opts {
+		opt(result)
+	}
+
+	return result
+}
+
+func WithURL(remoteURL string) playbackOpt {
+	return func(p *Playback) {
+		p.url = remoteURL
 	}
 }
 
@@ -62,9 +76,9 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 
 	entry, _ := cmd.storage.LoadOrStore(guild.ID, &sync.Mutex{})
 	mtx := entry.(*sync.Mutex)
-	result := mtx.TryLock()
+	success := mtx.TryLock()
 
-	if !result {
+	if !success {
 		respond(sess, inter, waitTurn)
 		return nil
 	}
@@ -73,15 +87,16 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	defer botvc.Speaking(false)
 
 	botvc.Speaking(true)
-	respond(sess, inter, exec)
 
 	path := inter.ApplicationCommandData().Options[0].Value.(string)
-	input, err := getAudioSource(path, http.DefaultClient)
+	input, err := getAudioSource(cmd.url, path, http.DefaultClient)
 
 	if err != nil {
+		respond(sess, inter, err.Error())
 		return err
 	}
 
+	respond(sess, inter, exec)
 	err = playSound(botvc.OpusSend, input)
 
 	if err != nil {
@@ -91,26 +106,28 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	return nil
 }
 
-func getAudioSource(path string, client *http.Client) (io.ReadCloser, error) {
-	url, err := url.Parse(path)
-
-	if err != nil || url.Scheme == "" || url.Host == "" {
-		res, err := os.Open(path)
+func getAudioSource(baseURL string, path string, client *http.Client) (io.ReadCloser, error) {
+	if baseURL != "" {
+		res, err := client.Get(baseURL + path)
 
 		if err != nil {
 			return nil, err
 		}
 
-		return res, nil
+		if res.StatusCode != http.StatusOK {
+			return nil, errors.New("could not retreive data from provided URL")
+		}
+
+		return res.Body, nil
 	}
 
-	res, err := client.Get(url.String())
+	res, err := os.Open(path)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return res.Body, nil
+	return res, nil
 }
 
 func playSound(soundBuff chan<- []byte, fh io.ReadCloser) error {

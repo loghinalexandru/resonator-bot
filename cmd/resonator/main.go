@@ -58,6 +58,7 @@ func main() {
 		commands.NewReact(&cmdSync),
 		commands.NewRo(&cmdSync),
 		commands.NewCurse(&cmdSync, swearsApiURL),
+		commands.NewFeed(&cmdSync, swearsApiURL),
 		commands.NewSwear(swearsApiURL),
 		commands.NewAnime(),
 		commands.NewManga(),

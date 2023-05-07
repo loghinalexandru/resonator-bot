@@ -1,14 +1,13 @@
 package commands
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/pkg/playback"
 )
 
-func NewCurse(sync *sync.Map, swearsURL string) *playback.Playback {
+func NewCurse(sync *sync.Map, baseURL string) *playback.Playback {
 	return playback.New(sync, &discordgo.ApplicationCommand{
 		Name:        "curse",
 		Description: "This command is used to play a friendly encouragement!",
@@ -20,19 +19,21 @@ func NewCurse(sync *sync.Map, swearsURL string) *playback.Playback {
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
 					{
 						Name:  "Romanian",
-						Value: fmt.Sprintf("%v/api/random/file?lang=ro&opus=true", swearsURL),
+						Value: "/api/random/file?lang=ro&opus=true",
 					},
 					{
 						Name:  "French",
-						Value: fmt.Sprintf("%v/api/random/file?lang=fr&opus=true", swearsURL),
+						Value: "/api/random/file?lang=fr&opus=true",
 					},
 					{
 						Name:  "English",
-						Value: fmt.Sprintf("%v/api/random/file?lang=en&opus=true", swearsURL),
+						Value: "/api/random/file?lang=en&opus=true",
 					},
 				},
 				Required: true,
 			},
 		},
-	})
+	},
+		playback.WithURL(baseURL),
+	)
 }
