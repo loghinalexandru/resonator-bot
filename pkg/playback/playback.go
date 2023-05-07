@@ -96,6 +96,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 		return err
 	}
 
+	//Need to respond faster somehow
 	respond(sess, inter, exec)
 	err = playSound(botvc.OpusSend, input)
 
