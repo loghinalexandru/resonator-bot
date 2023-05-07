@@ -21,6 +21,6 @@ func NewFeed(sync *sync.Map, baseURL string) *playback.Playback {
 			},
 		},
 	},
-		playback.WithURL(fmt.Sprintf("%v/api/remote?id=", baseURL)),
+		playback.WithURL(fmt.Sprintf("%v/api/remote?opus=true&id=", baseURL)),
 	)
 }
