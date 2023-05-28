@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	randomPath = "/api/random/file?encoding=opus&lang=%v"
+	randomPath = "/api/random/file?codec=opus&lang=%v"
 )
 
 func NewCurse(sync *sync.Map, baseURL string) *playback.Playback {

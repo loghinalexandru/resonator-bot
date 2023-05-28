@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	remotePath = "/api/remote?encoding=opus&id=%v"
+	remotePath = "/api/remote?codec=opus&id=%v"
 )
 
 func NewFeed(sync *sync.Map, baseURL string) *playback.Playback {
@@ -24,7 +24,6 @@ func NewFeed(sync *sync.Map, baseURL string) *playback.Playback {
 			},
 		},
 	},
-		//Fix this to be more easy to extend and not concat strings
 		playback.WithURL(baseURL+remotePath),
 	)
 }
