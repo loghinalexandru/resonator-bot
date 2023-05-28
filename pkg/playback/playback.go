@@ -2,6 +2,7 @@ package playback
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -13,9 +14,9 @@ import (
 )
 
 const (
-	waitTurn = "Please wait your turn!"
-	joinVc   = "Please join a voice channel!"
-	exec     = "Playing!"
+	missingVoiceChannelMsg = "Please join a voice channel first!"
+	concurrentPlaybackMsg  = "Please wait your turn!"
+	successMsg             = "Playback started!"
 )
 
 var (
@@ -57,11 +58,12 @@ func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
 
 func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
 	var err error
+	var audio io.ReadCloser
 
 	guild, _ := guild(sess, inter)
 	botvc, exists := sess.VoiceConnections[guild.ID]
 
-	if !exists {
+	if !exists || inter.Member.User.ID != botvc.UserID {
 		for _, vc := range guild.VoiceStates {
 			if inter.Member.User.ID == vc.UserID {
 				botvc, err = voice(sess, guild.ID, vc.ChannelID, false, true)
@@ -70,7 +72,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	}
 
 	if botvc == nil || err != nil {
-		respond(sess, inter, joinVc)
+		respond(sess, inter, missingVoiceChannelMsg)
 		return err
 	}
 
@@ -79,7 +81,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	success := mtx.TryLock()
 
 	if !success {
-		respond(sess, inter, waitTurn)
+		respond(sess, inter, concurrentPlaybackMsg)
 		return nil
 	}
 
@@ -88,17 +90,21 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 
 	botvc.Speaking(true)
 
-	path := inter.ApplicationCommandData().Options[0].Value.(string)
-	input, err := getAudioSource(cmd.url, path, http.DefaultClient)
+	userOpt := inter.ApplicationCommandData().Options[0].Value.(string)
+
+	if cmd.url != "" {
+		audio, err = remoteAudioSource(fmt.Sprintf(cmd.url, userOpt), http.DefaultClient)
+	} else {
+		audio, err = localAudioSource(userOpt)
+	}
 
 	if err != nil {
 		respond(sess, inter, err.Error())
 		return err
 	}
 
-	//Need to respond faster somehow
-	respond(sess, inter, exec)
-	err = playSound(botvc.OpusSend, input)
+	respond(sess, inter, successMsg)
+	err = playSound(botvc.OpusSend, audio)
 
 	if err != nil {
 		return err
@@ -107,21 +113,21 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	return nil
 }
 
-func getAudioSource(baseURL string, path string, client *http.Client) (io.ReadCloser, error) {
-	if baseURL != "" {
-		res, err := client.Get(baseURL + path)
+func remoteAudioSource(remoteURL string, client *http.Client) (io.ReadCloser, error) {
+	res, err := client.Get(remoteURL)
 
-		if err != nil {
-			return nil, err
-		}
-
-		if res.StatusCode != http.StatusOK {
-			return nil, errors.New("could not retreive data from provided URL")
-		}
-
-		return res.Body, nil
+	if err != nil {
+		return nil, err
 	}
 
+	if res.StatusCode != http.StatusOK {
+		return nil, errors.New("could not retreive data from provided URL")
+	}
+
+	return res.Body, nil
+}
+
+func localAudioSource(path string) (io.ReadCloser, error) {
 	res, err := os.Open(path)
 
 	if err != nil {

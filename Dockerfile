@@ -7,7 +7,7 @@ WORKDIR /app
 COPY ../ .
 
 RUN go mod download
-RUN go build -o / ./cmd/resonator
+RUN go build -o / .
 
 FROM golang:1.20-alpine
 

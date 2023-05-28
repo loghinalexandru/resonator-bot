@@ -1,11 +1,14 @@
 package commands
 
 import (
-	"fmt"
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/pkg/playback"
+)
+
+const (
+	remotePath = "/api/remote?encoding=opus&id=%v"
 )
 
 func NewFeed(sync *sync.Map, baseURL string) *playback.Playback {
@@ -22,6 +25,6 @@ func NewFeed(sync *sync.Map, baseURL string) *playback.Playback {
 		},
 	},
 		//Fix this to be more easy to extend and not concat strings
-		playback.WithURL(fmt.Sprintf("%v/api/remote?opus=true&id=", baseURL)),
+		playback.WithURL(baseURL+remotePath),
 	)
 }

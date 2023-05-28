@@ -7,6 +7,10 @@ import (
 	"github.com/loghinalexandru/resonator/pkg/playback"
 )
 
+const (
+	randomPath = "/api/random/file?encoding=opus&lang=%v"
+)
+
 func NewCurse(sync *sync.Map, baseURL string) *playback.Playback {
 	return playback.New(sync, &discordgo.ApplicationCommand{
 		Name:        "curse",
@@ -19,21 +23,21 @@ func NewCurse(sync *sync.Map, baseURL string) *playback.Playback {
 				Choices: []*discordgo.ApplicationCommandOptionChoice{
 					{
 						Name:  "Romanian",
-						Value: "/api/random/file?lang=ro&opus=true",
+						Value: "ro",
 					},
 					{
 						Name:  "French",
-						Value: "/api/random/file?lang=fr&opus=true",
+						Value: "fr",
 					},
 					{
 						Name:  "English",
-						Value: "/api/random/file?lang=en&opus=true",
+						Value: "en",
 					},
 				},
 				Required: true,
 			},
 		},
 	},
-		playback.WithURL(baseURL),
+		playback.WithURL(baseURL+randomPath),
 	)
 }
