@@ -13,7 +13,10 @@ const (
 	tstMessage = "test"
 )
 
-type TestStruct struct {
+type empty struct{}
+
+func init() {
+	respond = func(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) {}
 }
 
 func TestNew(t *testing.T) {
@@ -28,7 +31,7 @@ func TestNew(t *testing.T) {
 		testDef,
 		testURL,
 		http.DefaultClient,
-		func(payload TestStruct) string {
+		func(payload empty) string {
 			return "test"
 		})
 
@@ -52,7 +55,7 @@ func TestNew(t *testing.T) {
 func TestDefinition(t *testing.T) {
 	t.Parallel()
 
-	target := &REST[TestStruct]{
+	target := &REST[empty]{
 		def: &discordgo.ApplicationCommand{},
 	}
 
@@ -64,9 +67,6 @@ func TestDefinition(t *testing.T) {
 func TestHandlerWhenCallFails(t *testing.T) {
 	t.Parallel()
 
-	respond = sendRespMock
-	var cmdInter *discordgo.InteractionCreate
-
 	client := newTestClient(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: 500,
@@ -75,7 +75,7 @@ func TestHandlerWhenCallFails(t *testing.T) {
 		}
 	})
 
-	cmdInter = &discordgo.InteractionCreate{
+	cmdInter := &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{
 			Type: discordgo.InteractionApplicationCommandAutocomplete,
 			Data: discordgo.ApplicationCommandInteractionData{
@@ -84,9 +84,9 @@ func TestHandlerWhenCallFails(t *testing.T) {
 		},
 	}
 
-	target := REST[TestStruct]{
+	target := REST[empty]{
 		client: client,
-		formatter: func(payload TestStruct) string {
+		formatter: func(payload empty) string {
 			return tstMessage
 		},
 	}
@@ -101,9 +101,6 @@ func TestHandlerWhenCallFails(t *testing.T) {
 func TestHandler(t *testing.T) {
 	t.Parallel()
 
-	respond = sendRespMock
-	var cmdInter *discordgo.InteractionCreate
-
 	client := newTestClient(func(req *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: 200,
@@ -112,7 +109,7 @@ func TestHandler(t *testing.T) {
 		}
 	})
 
-	cmdInter = &discordgo.InteractionCreate{
+	cmdInter := &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{
 			Type: discordgo.InteractionApplicationCommandAutocomplete,
 			Data: discordgo.ApplicationCommandInteractionData{
@@ -121,9 +118,9 @@ func TestHandler(t *testing.T) {
 		},
 	}
 
-	target := REST[TestStruct]{
+	target := REST[empty]{
 		client: client,
-		formatter: func(payload TestStruct) string {
+		formatter: func(payload empty) string {
 			return tstMessage
 		},
 	}
@@ -138,14 +135,13 @@ func TestHandler(t *testing.T) {
 func TestCreateResponse(t *testing.T) {
 	t.Parallel()
 
-	var testPayload TestStruct
-	target := &REST[TestStruct]{
-		formatter: func(payload TestStruct) string {
+	target := &REST[empty]{
+		formatter: func(payload empty) string {
 			return tstMessage
 		},
 	}
 
-	got := target.createReponse(testPayload)
+	got := target.createReponse(empty{})
 
 	if got.Data.Content != tstMessage {
 		t.Errorf("want %q, got %q", tstMessage, got.Data.Content)
@@ -162,7 +158,4 @@ func newTestClient(fn RoundTripFunc) *http.Client {
 	return &http.Client{
 		Transport: RoundTripFunc(fn),
 	}
-}
-
-func sendRespMock(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) {
 }
