@@ -5,6 +5,11 @@ import (
 	"github.com/loghinalexandru/resonator/pkg/logging"
 )
 
+type CustomCommandDef interface {
+	Definition() *discordgo.ApplicationCommand
+	Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error
+}
+
 func Join(logger *logging.Logger) func(*discordgo.Session, *discordgo.GuildCreate) {
 	return func(sess *discordgo.Session, gld *discordgo.GuildCreate) {
 		logger.Info("Joined guild with ID: ", gld.ID)

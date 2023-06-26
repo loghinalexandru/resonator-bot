@@ -10,7 +10,7 @@ import (
 	"syscall"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/loghinalexandru/resonator/internal/commands"
+	"github.com/loghinalexandru/resonator/internal/command"
 	"github.com/loghinalexandru/resonator/pkg/logging"
 )
 
@@ -54,14 +54,15 @@ func main() {
 
 	cmdSync := sync.Map{}
 	cmds := []CustomCommandDef{
-		commands.NewPlay(&cmdSync),
-		commands.NewReact(&cmdSync),
-		commands.NewRo(&cmdSync),
-		commands.NewCurse(&cmdSync, swearsApiURL),
-		commands.NewSwear(swearsApiURL),
-		commands.NewAnime(),
-		commands.NewManga(),
-		commands.NewQuote(),
+		command.NewPlay(&cmdSync),
+		command.NewReact(&cmdSync),
+		command.NewRo(&cmdSync),
+		command.NewCurse(&cmdSync, swearsApiURL),
+		command.NewFeed(&cmdSync, swearsApiURL),
+		command.NewSwear(swearsApiURL),
+		command.NewAnime(),
+		command.NewManga(),
+		command.NewQuote(),
 	}
 
 	handlers := []any{
