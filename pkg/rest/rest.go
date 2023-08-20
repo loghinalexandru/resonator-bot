@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	respond = sendResp
+	ErrCallFailed = errors.New("call to URI failed")
+	respond       = sendResp
 )
 
 const (
@@ -64,7 +65,7 @@ func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.Interactio
 		}
 
 		respond(sess, inter.Interaction, interResp)
-		return errors.New("call to URI failed")
+		return ErrCallFailed
 	}
 
 	defer response.Body.Close()

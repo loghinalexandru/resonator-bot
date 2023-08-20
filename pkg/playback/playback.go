@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"sync"
 	"time"
@@ -14,18 +15,22 @@ import (
 )
 
 const (
-	missingVoiceChannelMsg = "Please join a voice channel first!"
-	concurrentPlaybackMsg  = "Please wait your turn!"
-	successMsg             = "Playback started!"
+	msgMissingVoiceChannel = "Please join a voice channel first!"
+	msgConcurrentPlayback  = "Please wait your turn!"
+	msgMissingAudio        = "Could not retrieve specified audio!"
+	msgSuccess             = "Playback started!"
 )
 
 var (
-	voice   = joinVoice
-	guild   = getGuild
-	respond = sendResp
+	ErrFileHandler = errors.New("nil file handler")
+	ErrTimeout     = errors.New("opus frame timeout")
+	ErrContent     = errors.New("could not retreive data from provided URL")
+	voice          = joinVoice
+	guild          = getGuild
+	respond        = sendResp
 )
 
-type playbackOpt func(*Playback)
+type playbackOpt func(*Playback) error
 
 type Playback struct {
 	storage *sync.Map
@@ -40,6 +45,7 @@ func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...pl
 	}
 
 	for _, opt := range opts {
+		//Handle error case
 		opt(result)
 	}
 
@@ -47,8 +53,15 @@ func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...pl
 }
 
 func WithURL(remoteURL string) playbackOpt {
-	return func(p *Playback) {
+	return func(p *Playback) error {
+		_, err := url.Parse(remoteURL)
+
+		if err != nil {
+			return err
+		}
+
 		p.url = remoteURL
+		return nil
 	}
 }
 
@@ -56,10 +69,7 @@ func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
 	return cmd.def
 }
 
-func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
-	var err error
-	var audio io.ReadCloser
-
+func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) (err error) {
 	guild, _ := guild(sess, inter)
 	botvc, exists := sess.VoiceConnections[guild.ID]
 
@@ -72,25 +82,28 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	}
 
 	if botvc == nil || err != nil {
-		respond(sess, inter, missingVoiceChannelMsg)
+		respond(sess, inter, msgMissingVoiceChannel)
 		return err
 	}
 
 	entry, _ := cmd.storage.LoadOrStore(guild.ID, &sync.Mutex{})
 	mtx := entry.(*sync.Mutex)
-	success := mtx.TryLock()
+	ok := mtx.TryLock()
 
-	if !success {
-		respond(sess, inter, concurrentPlaybackMsg)
+	if !ok {
+		respond(sess, inter, msgConcurrentPlayback)
 		return nil
 	}
 
-	defer mtx.Unlock()
-	defer botvc.Speaking(false)
-
 	botvc.Speaking(true)
 
+	defer mtx.Unlock()
+	defer func() {
+		err = errors.Join(err, botvc.Speaking(false))
+	}()
+
 	userOpt := inter.ApplicationCommandData().Options[0].Value.(string)
+	var audio io.ReadCloser
 
 	if cmd.url != "" {
 		audio, err = remoteAudioSource(fmt.Sprintf(cmd.url, userOpt), http.DefaultClient)
@@ -99,11 +112,11 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	}
 
 	if err != nil {
-		respond(sess, inter, err.Error())
+		respond(sess, inter, msgMissingAudio)
 		return err
 	}
 
-	respond(sess, inter, successMsg)
+	respond(sess, inter, msgSuccess)
 	err = playSound(botvc.OpusSend, audio)
 
 	if err != nil {
@@ -121,7 +134,7 @@ func remoteAudioSource(remoteURL string, client *http.Client) (io.ReadCloser, er
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("could not retreive data from provided URL")
+		return nil, ErrContent
 	}
 
 	return res.Body, nil
@@ -139,7 +152,7 @@ func localAudioSource(path string) (io.ReadCloser, error) {
 
 func playSound(soundBuff chan<- []byte, fh io.ReadCloser) error {
 	if fh == nil {
-		return errors.New("nil file handler")
+		return ErrFileHandler
 	}
 
 	defer fh.Close()
@@ -157,7 +170,7 @@ func playSound(soundBuff chan<- []byte, fh io.ReadCloser) error {
 		select {
 		case soundBuff <- frame:
 		case <-time.After(2 * time.Second):
-			return errors.New("opus frame timeout")
+			return ErrTimeout
 		}
 	}
 

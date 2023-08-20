@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strconv"
@@ -11,23 +11,29 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/internal/command"
-	"github.com/loghinalexandru/resonator/pkg/logging"
 )
 
 var (
 	token        string
 	swearsApiURL string
-	logLevel     logging.LogLevel = logging.Info
-	shardID      int              = 0
-	shardCount   int              = 1
+	logLevel     = 0
+	shardID      = 0
+	shardCount   = 1
 )
+
+type Logger interface {
+	Debug(msg string, args ...any)
+	Info(msg string, args ...any)
+	Warn(msg string, args ...any)
+	Error(msg string, args ...any)
+}
 
 func loadEnv() {
 	token = os.Getenv("BOT_TOKEN")
 	swearsApiURL = os.Getenv("SWEARS_API_URL")
 
 	if lvl := os.Getenv("LOG_LEVEL"); lvl != "" {
-		logLevel = logging.ToLogLevel(lvl)
+		logLevel, _ = strconv.Atoi(lvl)
 	}
 
 	if replicas := os.Getenv("SHARD_COUNT"); replicas != "" {
@@ -47,11 +53,19 @@ func getIntents() discordgo.Intent {
 func main() {
 	loadEnv()
 
-	session, sessionError := discordgo.New("Bot " + token)
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.Level(logLevel),
+	}))
+
+	session, err := discordgo.New("Bot " + token)
+
+	if err != nil {
+		logger.Error("Unexpected error while creating session", "err", err)
+		return
+	}
+
 	session.ShouldReconnectVoiceConnOnError = false
-
-	logger := logging.New(logLevel, log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile))
-
 	cmdSync := sync.Map{}
 	cmds := []CustomCommandDef{
 		command.NewPlay(&cmdSync),
@@ -70,11 +84,6 @@ func main() {
 		InteractionCreate(cmds, logger),
 	}
 
-	if sessionError != nil {
-		logger.Error(sessionError)
-		return
-	}
-
 	for _, handler := range handlers {
 		session.AddHandler(handler)
 	}
@@ -83,23 +92,23 @@ func main() {
 	session.ShardID = shardID
 	session.ShardCount = shardCount
 
-	socketError := session.Open()
+	err = session.Open()
 	defer session.Close()
 
-	if socketError != nil {
-		logger.Error(socketError)
+	if err != nil {
+		logger.Error("Unexpected error while opening session", "err", err)
 		return
 	}
 
 	logger.Info("Bot is ready!")
-	logger.Info("Bot ShardId: ", session.ShardID)
-	logger.Info("Bot ShardCount: ", session.ShardCount)
+	logger.Info("Bot shard ID", "shardID", session.ShardID)
+	logger.Info("Bot shard count: ", "shardCount", session.ShardCount)
 
 	for _, command := range cmds {
 		_, err := session.ApplicationCommandCreate(session.State.User.ID, "", command.Definition())
 
 		if err != nil {
-			logger.Error(err)
+			logger.Error("Unexpected error while creating commands", "err", err)
 		}
 	}
 

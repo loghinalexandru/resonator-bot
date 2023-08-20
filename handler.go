@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/loghinalexandru/resonator/pkg/logging"
 )
 
 type CustomCommandDef interface {
@@ -10,13 +9,13 @@ type CustomCommandDef interface {
 	Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error
 }
 
-func Join(logger *logging.Logger) func(*discordgo.Session, *discordgo.GuildCreate) {
+func Join(logger Logger) func(*discordgo.Session, *discordgo.GuildCreate) {
 	return func(sess *discordgo.Session, gld *discordgo.GuildCreate) {
-		logger.Info("Joined guild with ID: ", gld.ID)
+		logger.Info("joined guild", "guildID", gld.ID)
 	}
 }
 
-func InteractionCreate(cmds []CustomCommandDef, logger *logging.Logger) func(*discordgo.Session, *discordgo.InteractionCreate) {
+func InteractionCreate(cmds []CustomCommandDef, logger Logger) func(*discordgo.Session, *discordgo.InteractionCreate) {
 	var commandsTable = make(map[string]CustomCommandDef)
 
 	for _, cmd := range cmds {
@@ -28,7 +27,7 @@ func InteractionCreate(cmds []CustomCommandDef, logger *logging.Logger) func(*di
 			err := cmd.Handler(session, interaction)
 
 			if err != nil {
-				logger.Error(err)
+				logger.Error("Unexpected application error", "err", err)
 			}
 		}
 	}

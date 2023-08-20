@@ -96,59 +96,12 @@ func TestPlaySoundWithInvalidHandler(t *testing.T) {
 	}
 }
 
-// func TestGetAudioSourceWithInvalidURI(t *testing.T) {
-// 	t.Parallel()
-
-// 	tests := []string{"", "localhost.com/api", "//google", "http://"}
-
-// 	for _, tc := range tests {
-// 		t.Run(tc, func(t *testing.T) {
-// 			_, err := getAudioSource(tc, nil, true)
-
-// 			if err == nil {
-// 				t.Error(err)
-// 			}
-// 		})
-// 	}
-// }
-
-// func TestGetAudioSourceWithValidURI(t *testing.T) {
-// 	t.Parallel()
-
-// 	tests := []string{"testdata/test_file.dca", "https://www.google.com/"}
-
-// 	client := newTestClient(func(req *http.Request) *http.Response {
-// 		if req.URL.String() == "https://www.google.com/" {
-// 			return &http.Response{
-// 				StatusCode: 200,
-// 				Body:       io.NopCloser(bytes.NewBufferString("{}")),
-// 				Header:     make(http.Header),
-// 			}
-// 		}
-// 		return nil
-// 	})
-
-// 	for _, tc := range tests {
-// 		t.Run(tc, func(t *testing.T) {
-// 			res, err := getAudioSource(tc, client, true)
-
-// 			if err != nil {
-// 				t.Fatal(err)
-// 			}
-
-// 			if res == nil {
-// 				t.Error("should not be nil")
-// 			}
-// 		})
-// 	}
-// }
-
 func TestHandlerWhenCalledCreatesMutex(t *testing.T) {
 	t.Parallel()
 
-	voice = joinVoiceMock
-	guild = getGuildMock
-	respond = sendRespMock
+	voice = joinVoiceStub
+	guild = getGuildStub
+	respond = sendRespStub
 
 	inter := &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{
@@ -188,11 +141,11 @@ func TestHandlerWhenCalledCreatesMutex(t *testing.T) {
 	}
 }
 
-func joinVoiceMock(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
+func joinVoiceStub(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
 	return &discordgo.VoiceConnection{}, nil
 }
 
-func getGuildMock(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
+func getGuildStub(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
 	return &discordgo.Guild{
 		ID: "test",
 		VoiceStates: []*discordgo.VoiceState{
@@ -203,7 +156,7 @@ func getGuildMock(sess *discordgo.Session, inter *discordgo.InteractionCreate) (
 	}, nil
 }
 
-func sendRespMock(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+func sendRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
 }
 
 type RoundTripFunc func(req *http.Request) *http.Response
