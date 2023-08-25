@@ -25,6 +25,6 @@ func NewFeed(sync *sync.Map, baseURL string) *playback.Playback {
 			},
 		},
 	},
-		playback.WithAudioSource(audio.NewRemote(baseURL+remotePath)),
+		playback.WithSource(audio.NewHTTP(baseURL+remotePath)),
 	)
 }

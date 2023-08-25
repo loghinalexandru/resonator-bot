@@ -11,19 +11,19 @@ var (
 	ErrContent = errors.New("could not retreive data from provided URL")
 )
 
-type Remote struct {
+type httpProvider struct {
 	baseURL string
 	client  *http.Client
 }
 
-func NewRemote(baseURL string) *Remote {
-	return &Remote{
+func NewHTTP(baseURL string) *httpProvider {
+	return &httpProvider{
 		baseURL: baseURL,
 		client:  http.DefaultClient,
 	}
 }
 
-func (r Remote) Audio(path string) (io.ReadCloser, error) {
+func (r httpProvider) Audio(path string) (io.ReadCloser, error) {
 	res, err := r.client.Get(fmt.Sprintf(r.baseURL, path))
 
 	if err != nil {

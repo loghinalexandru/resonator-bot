@@ -31,12 +31,8 @@ var (
 
 type playbackOpt func(*Playback) error
 
-type AudioProvider interface {
-	Audio(path string) (io.ReadCloser, error)
-}
-
 type Playback struct {
-	source  AudioProvider
+	src     audio.Provider
 	storage *sync.Map
 	def     *discordgo.ApplicationCommand
 }
@@ -44,7 +40,7 @@ type Playback struct {
 func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...playbackOpt) *Playback {
 	result := &Playback{
 		def:     definition,
-		source:  audio.Local{},
+		src:     audio.NewLocal(),
 		storage: syncMap,
 	}
 
@@ -56,13 +52,13 @@ func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...pl
 	return result
 }
 
-func WithAudioSource(source AudioProvider) playbackOpt {
+func WithSource(provider audio.Provider) playbackOpt {
 	return func(p *Playback) error {
-		if source == nil {
+		if provider == nil {
 			return ErrAudioSource
 		}
 
-		p.source = source
+		p.src = provider
 		return nil
 	}
 }
@@ -71,7 +67,7 @@ func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
 	return cmd.def
 }
 
-func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) (err error) {
+func (command *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) (err error) {
 	guild, _ := guild(sess, inter)
 	botvc, exists := sess.VoiceConnections[guild.ID]
 
@@ -88,7 +84,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 		return err
 	}
 
-	entry, _ := cmd.storage.LoadOrStore(guild.ID, &sync.Mutex{})
+	entry, _ := command.storage.LoadOrStore(guild.ID, &sync.Mutex{})
 	mtx := entry.(*sync.Mutex)
 	ok := mtx.TryLock()
 
@@ -110,7 +106,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	}()
 
 	userOpt := inter.ApplicationCommandData().Options[0].Value.(string)
-	audio, err := cmd.source.Audio(userOpt)
+	audio, err := command.src.Audio(userOpt)
 
 	if err != nil {
 		respond(sess, inter, msgMissingAudio)

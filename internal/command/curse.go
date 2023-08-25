@@ -39,6 +39,6 @@ func NewCurse(sync *sync.Map, baseURL string) *playback.Playback {
 			},
 		},
 	},
-		playback.WithAudioSource(audio.NewRemote(baseURL+randomPath)),
+		playback.WithSource(audio.NewHTTP(baseURL+randomPath)),
 	)
 }

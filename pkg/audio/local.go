@@ -5,9 +5,13 @@ import (
 	"os"
 )
 
-type Local struct{}
+type localProvider struct{}
 
-func (l Local) Audio(path string) (io.ReadCloser, error) {
+func NewLocal() *localProvider {
+	return &localProvider{}
+}
+
+func (l localProvider) Audio(path string) (io.ReadCloser, error) {
 	res, err := os.Open(path)
 
 	if err != nil {
