@@ -2,16 +2,13 @@ package playback
 
 import (
 	"errors"
-	"fmt"
 	"io"
-	"net/http"
-	"net/url"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jonas747/dca"
+	"github.com/loghinalexandru/resonator/pkg/audio"
 )
 
 const (
@@ -26,7 +23,7 @@ var (
 	ErrFileHandler = errors.New("nil file handler")
 	ErrTimeout     = errors.New("opus frame timeout")
 	ErrHttpClient  = errors.New("missing http client")
-	ErrContent     = errors.New("could not retreive data from provided URL")
+	ErrAudioSource = errors.New("missing audio source")
 	voice          = joinVoice
 	guild          = getGuild
 	respond        = sendResp
@@ -34,17 +31,20 @@ var (
 
 type playbackOpt func(*Playback) error
 
+type AudioProvider interface {
+	Audio(path string) (io.ReadCloser, error)
+}
+
 type Playback struct {
+	source  AudioProvider
 	storage *sync.Map
-	client  *http.Client
-	baseURL string
 	def     *discordgo.ApplicationCommand
 }
 
 func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...playbackOpt) *Playback {
 	result := &Playback{
 		def:     definition,
-		client:  http.DefaultClient,
+		source:  audio.Local{},
 		storage: syncMap,
 	}
 
@@ -56,26 +56,13 @@ func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...pl
 	return result
 }
 
-func WithURL(baseURL string) playbackOpt {
+func WithAudioSource(source AudioProvider) playbackOpt {
 	return func(p *Playback) error {
-		_, err := url.Parse(baseURL)
-
-		if err != nil {
-			return err
+		if source == nil {
+			return ErrAudioSource
 		}
 
-		p.baseURL = baseURL
-		return nil
-	}
-}
-
-func WithHttpClient(client *http.Client) playbackOpt {
-	return func(p *Playback) error {
-		if client == nil {
-			return ErrHttpClient
-		}
-
-		p.client = client
+		p.source = source
 		return nil
 	}
 }
@@ -123,7 +110,7 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	}()
 
 	userOpt := inter.ApplicationCommandData().Options[0].Value.(string)
-	audio, err := cmd.audioSource(userOpt)
+	audio, err := cmd.source.Audio(userOpt)
 
 	if err != nil {
 		respond(sess, inter, msgMissingAudio)
@@ -138,30 +125,6 @@ func (cmd *Playback) Handler(sess *discordgo.Session, inter *discordgo.Interacti
 	}
 
 	return nil
-}
-
-func (cmd *Playback) audioSource(path string) (io.ReadCloser, error) {
-	if cmd.baseURL != "" {
-		res, err := cmd.client.Get(fmt.Sprintf(cmd.baseURL, path))
-
-		if err != nil {
-			return nil, err
-		}
-
-		if res.StatusCode != http.StatusOK {
-			return nil, ErrContent
-		}
-
-		return res.Body, nil
-	}
-
-	res, err := os.Open(path)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
 }
 
 func playSound(soundBuff chan<- []byte, fh io.ReadCloser) error {

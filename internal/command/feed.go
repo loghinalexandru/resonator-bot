@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/pkg/audio"
 	"github.com/loghinalexandru/resonator/pkg/playback"
 )
 
@@ -24,6 +25,6 @@ func NewFeed(sync *sync.Map, baseURL string) *playback.Playback {
 			},
 		},
 	},
-		playback.WithURL(baseURL+remotePath),
+		playback.WithAudioSource(audio.NewRemote(baseURL+remotePath)),
 	)
 }
