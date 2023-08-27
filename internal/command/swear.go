@@ -2,19 +2,18 @@ package command
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/pkg/rest"
 )
 
-type SwearData struct {
+type swearData struct {
 	Swear string `json:"swear"`
 	Lang  string `json:"lang"`
 }
 
-func NewSwear(swearsURL string) *rest.REST[SwearData] {
+func NewSwear(swearsURL string) *rest.REST[swearData] {
 	url := swearsURL + "/api/random?lang=%v"
 	def := &discordgo.ApplicationCommand{
 		Name:        "swear",
@@ -43,10 +42,16 @@ func NewSwear(swearsURL string) *rest.REST[SwearData] {
 		},
 	}
 
-	return rest.New(def, url, http.DefaultClient, swearFormatter)
+	result, err := rest.New(def, url, rest.WithFormatter[swearData](swearFormatter))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }
 
-func swearFormatter(resp SwearData) string {
+func swearFormatter(resp swearData) string {
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf("> \"**%s**\"", resp.Swear))

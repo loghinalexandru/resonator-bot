@@ -2,7 +2,6 @@ package command
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -20,7 +19,13 @@ func NewQuote() *rest.REST[quoteData] {
 		Description: "This command is used find Kanye West quotes!",
 	}
 
-	return rest.New(def, url, http.DefaultClient, quoteFormatter)
+	result, err := rest.New(def, url, rest.WithFormatter[quoteData](quoteFormatter))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }
 
 func quoteFormatter(content quoteData) string {

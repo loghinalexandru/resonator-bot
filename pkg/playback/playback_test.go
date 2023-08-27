@@ -18,7 +18,11 @@ func TestNew(t *testing.T) {
 
 	testSyncMap := &sync.Map{}
 
-	got := New(testSyncMap, testDef)
+	got, err := New(testSyncMap, testDef)
+
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
 
 	if got.def != testDef {
 		t.Error("different command definition")

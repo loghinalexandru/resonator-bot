@@ -27,19 +27,17 @@ func TestNew(t *testing.T) {
 	}
 	testURL := "test"
 
-	got := New(
-		testDef,
-		testURL,
-		http.DefaultClient,
-		func(payload empty) string {
-			return "test"
-		})
+	got, err := New[empty](testDef, testURL)
+
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
 
 	if got.def != testDef {
 		t.Error("different command definition")
 	}
 
-	if got.url != testURL {
+	if got.baseURL != testURL {
 		t.Error("different command url")
 	}
 

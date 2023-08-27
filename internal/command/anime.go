@@ -2,7 +2,6 @@ package command
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -10,7 +9,7 @@ import (
 )
 
 type animeData struct {
-	Id    string `json:"id"`
+	ID    string `json:"id"`
 	Stats struct {
 		Title    string `json:"canonicalTitle"`
 		Type     string `json:"showType"`
@@ -43,7 +42,13 @@ func NewAnime() *rest.REST[animeWrapper] {
 		},
 	}
 
-	return rest.New(def, url, http.DefaultClient, animeFormatter)
+	result, err := rest.New(def, url, rest.WithFormatter[animeWrapper](animeFormatter))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }
 
 func animeFormatter(resp animeWrapper) string {

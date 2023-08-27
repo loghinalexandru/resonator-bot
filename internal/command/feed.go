@@ -13,7 +13,7 @@ const (
 )
 
 func NewFeed(sync *sync.Map, baseURL string) *playback.Playback {
-	return playback.New(sync, &discordgo.ApplicationCommand{
+	result, err := playback.New(sync, &discordgo.ApplicationCommand{
 		Name:        "feed",
 		Description: "This command is used to play remote youtube sound!",
 		Options: []*discordgo.ApplicationCommandOption{
@@ -27,4 +27,10 @@ func NewFeed(sync *sync.Map, baseURL string) *playback.Playback {
 	},
 		playback.WithSource(audio.NewHTTP(baseURL+remotePath)),
 	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }

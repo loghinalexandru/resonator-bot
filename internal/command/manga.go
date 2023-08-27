@@ -2,7 +2,6 @@ package command
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -47,7 +46,13 @@ func NewManga() *rest.REST[mangaWrapper] {
 		},
 	}
 
-	return rest.New(def, url, http.DefaultClient, mangaFormatter)
+	result, err := rest.New(def, url, rest.WithFormatter[mangaWrapper](mangaFormatter))
+
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }
 
 func mangaFormatter(resp mangaWrapper) string {

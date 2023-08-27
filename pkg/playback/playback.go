@@ -37,7 +37,7 @@ type Playback struct {
 	def     *discordgo.ApplicationCommand
 }
 
-func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...playbackOpt) *Playback {
+func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...playbackOpt) (*Playback, error) {
 	result := &Playback{
 		def:     definition,
 		src:     audio.NewLocal(),
@@ -45,11 +45,13 @@ func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...pl
 	}
 
 	for _, opt := range opts {
-		//Handle error case
-		opt(result)
+		err := opt(result)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return result
+	return result, nil
 }
 
 func WithSource(provider audio.Provider) playbackOpt {

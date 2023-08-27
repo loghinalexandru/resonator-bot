@@ -13,7 +13,7 @@ const (
 )
 
 func NewCurse(sync *sync.Map, baseURL string) *playback.Playback {
-	return playback.New(sync, &discordgo.ApplicationCommand{
+	result, err := playback.New(sync, &discordgo.ApplicationCommand{
 		Name:        "curse",
 		Description: "This command is used to play a friendly encouragement!",
 		Options: []*discordgo.ApplicationCommandOption{
@@ -41,4 +41,10 @@ func NewCurse(sync *sync.Map, baseURL string) *playback.Playback {
 	},
 		playback.WithSource(audio.NewHTTP(baseURL+randomPath)),
 	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }

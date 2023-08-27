@@ -11,30 +11,64 @@ import (
 )
 
 var (
-	ErrCallFailed = errors.New("call to URI failed")
-	respond       = sendResp
+	ErrCallFailed    = errors.New("call to URI failed")
+	ErrHttpClient    = errors.New("missing http client")
+	ErrRespFormatter = errors.New("missing response formatter")
+	respond          = sendResp
 )
 
 const (
-	failure = "Service can not be reached!"
+	msgCallFailed = "Service can not be reached!"
 )
 
+type restOpt[T any] func(*REST[T]) error
+type respFmt[T any] func(payload T) string
+
 type REST[T any] struct {
-	url       string
-	formatter func(payload T) string
+	baseURL   string
+	formatter respFmt[T]
 	client    *http.Client
 	def       *discordgo.ApplicationCommand
 }
 
-func New[T any](definition *discordgo.ApplicationCommand, url string, client *http.Client, form func(payload T) string) *REST[T] {
-	result := REST[T]{
+func New[T any](definition *discordgo.ApplicationCommand, URL string, opts ...restOpt[T]) (*REST[T], error) {
+	result := &REST[T]{
 		def:       definition,
-		url:       url,
-		client:    client,
-		formatter: form,
+		baseURL:   URL,
+		client:    http.DefaultClient,
+		formatter: func(p T) string { return fmt.Sprint(p) },
 	}
 
-	return &result
+	for _, opt := range opts {
+		err := opt(result)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return result, nil
+}
+
+func WithHttpClient[T any](c *http.Client) restOpt[T] {
+	return func(r *REST[T]) error {
+		if r.client == nil {
+			return ErrHttpClient
+		}
+
+		r.client = c
+		return nil
+	}
+}
+
+func WithFormatter[T any](f respFmt[T]) restOpt[T] {
+	return func(r *REST[T]) error {
+		if r.client == nil {
+			return ErrRespFormatter
+		}
+
+		r.formatter = f
+		return nil
+	}
 }
 
 func (cmd *REST[T]) Definition() *discordgo.ApplicationCommand {
@@ -50,7 +84,7 @@ func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.Interactio
 		}
 	}
 
-	response, err := cmd.client.Get(fmt.Sprintf(cmd.url, args...))
+	response, err := cmd.client.Get(fmt.Sprintf(cmd.baseURL, args...))
 	if err != nil {
 		return err
 	}
@@ -59,7 +93,7 @@ func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.Interactio
 		interResp := &discordgo.InteractionResponse{
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
-				Content: failure,
+				Content: msgCallFailed,
 				Flags:   discordgo.MessageFlagsEphemeral,
 			},
 		}
