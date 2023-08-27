@@ -71,11 +71,11 @@ func WithFormatter[T any](f respFmt[T]) restOpt[T] {
 	}
 }
 
-func (cmd *REST[T]) Definition() *discordgo.ApplicationCommand {
+func (cmd *REST[T]) Data() *discordgo.ApplicationCommand {
 	return cmd.def
 }
 
-func (cmd *REST[T]) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
+func (cmd *REST[T]) Handle(sess *discordgo.Session, inter *discordgo.InteractionCreate) error {
 	var args []any
 	var data T
 	for _, v := range inter.ApplicationCommandData().Options {

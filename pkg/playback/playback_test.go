@@ -40,7 +40,7 @@ func TestDefinition(t *testing.T) {
 		def: &discordgo.ApplicationCommand{},
 	}
 
-	if target.Definition() == nil {
+	if target.Data() == nil {
 		t.Error("this should not be nil")
 	}
 }
@@ -129,7 +129,7 @@ func TestHandlerWhenCalledCreatesMutex(t *testing.T) {
 		storage: &sync.Map{},
 	}
 
-	err := target.Handler(&discordgo.Session{}, inter)
+	err := target.Handle(&discordgo.Session{}, inter)
 
 	if err == nil {
 		t.Fatal("should not be empty")

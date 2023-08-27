@@ -1,8 +1,6 @@
 package command
 
 import (
-	"sync"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/pkg/audio"
 	"github.com/loghinalexandru/resonator/pkg/playback"
@@ -12,8 +10,8 @@ const (
 	randomPath = "/api/random/file?codec=opus&lang=%v"
 )
 
-func NewCurse(sync *sync.Map, baseURL string) *playback.Playback {
-	result, err := playback.New(sync, &discordgo.ApplicationCommand{
+func NewCurse(ctx BotContext) *playback.Playback {
+	result, err := playback.New(ctx.Sync, &discordgo.ApplicationCommand{
 		Name:        "curse",
 		Description: "This command is used to play a friendly encouragement!",
 		Options: []*discordgo.ApplicationCommandOption{
@@ -39,7 +37,7 @@ func NewCurse(sync *sync.Map, baseURL string) *playback.Playback {
 			},
 		},
 	},
-		playback.WithSource(audio.NewHTTP(baseURL+randomPath)),
+		playback.WithSource(audio.NewHTTP(ctx.SwearsApiURL.String()+randomPath)),
 	)
 
 	if err != nil {

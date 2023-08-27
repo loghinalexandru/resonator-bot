@@ -1,14 +1,12 @@
 package command
 
 import (
-	"sync"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/pkg/playback"
 )
 
-func NewRo(sync *sync.Map) *playback.Playback {
-	result, err := playback.New(sync, &discordgo.ApplicationCommand{
+func NewRo(ctx BotContext) *playback.Playback {
+	result, err := playback.New(ctx.Sync, &discordgo.ApplicationCommand{
 		Name:        "ro",
 		Description: "This command is used to play a romanian sound in the chat!",
 		Options: []*discordgo.ApplicationCommandOption{

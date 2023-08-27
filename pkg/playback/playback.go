@@ -65,11 +65,11 @@ func WithSource(provider audio.Provider) playbackOpt {
 	}
 }
 
-func (cmd *Playback) Definition() *discordgo.ApplicationCommand {
+func (cmd *Playback) Data() *discordgo.ApplicationCommand {
 	return cmd.def
 }
 
-func (command *Playback) Handler(sess *discordgo.Session, inter *discordgo.InteractionCreate) (err error) {
+func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.InteractionCreate) (err error) {
 	guild, _ := guild(sess, inter)
 	botvc, exists := sess.VoiceConnections[guild.ID]
 

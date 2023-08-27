@@ -2,6 +2,7 @@ package main
 
 import (
 	"log/slog"
+	"net/url"
 	"os"
 	"os/signal"
 	"strconv"
@@ -13,14 +14,6 @@ import (
 	"github.com/loghinalexandru/resonator/internal/command"
 )
 
-var (
-	token        string
-	swearsApiURL string
-	logLevel     = 0
-	shardID      = 0
-	shardCount   = 1
-)
-
 type Logger interface {
 	Debug(msg string, args ...any)
 	Info(msg string, args ...any)
@@ -28,22 +21,31 @@ type Logger interface {
 	Error(msg string, args ...any)
 }
 
-func loadEnv() {
-	token = os.Getenv("BOT_TOKEN")
-	swearsApiURL = os.Getenv("SWEARS_API_URL")
+func contextFromEnv() command.BotContext {
+	ctx := command.BotContext{
+		LogLvl: 0,
+		Index:  0,
+		Shards: 1,
+		Sync:   &sync.Map{},
+	}
+
+	ctx.Token = os.Getenv("BOT_TOKEN")
+	ctx.SwearsApiURL, _ = url.Parse(os.Getenv("SWEARS_API_URL"))
 
 	if lvl := os.Getenv("LOG_LEVEL"); lvl != "" {
-		logLevel, _ = strconv.Atoi(lvl)
+		ctx.LogLvl, _ = strconv.Atoi(lvl)
 	}
 
 	if replicas := os.Getenv("SHARD_COUNT"); replicas != "" {
-		shardCount, _ = strconv.Atoi(replicas)
+		ctx.Shards, _ = strconv.Atoi(replicas)
 	}
 
 	if replicaID := os.Getenv("SHARD_ID"); replicaID != "" {
 		index := strings.Split(replicaID, "-")
-		shardID, _ = strconv.Atoi(index[len(index)-1])
+		ctx.Index, _ = strconv.Atoi(index[len(index)-1])
 	}
+
+	return ctx
 }
 
 func getIntents() discordgo.Intent {
@@ -51,14 +53,15 @@ func getIntents() discordgo.Intent {
 }
 
 func main() {
-	loadEnv()
+	context := contextFromEnv()
 
+	logLvl := slog.Level(context.LogLvl)
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		AddSource: true,
-		Level:     slog.Level(logLevel),
+		Level:     logLvl,
 	}))
 
-	session, err := discordgo.New("Bot " + token)
+	session, err := discordgo.New("Bot " + context.Token)
 
 	if err != nil {
 		logger.Error("Unexpected error while creating session", "err", err)
@@ -66,22 +69,21 @@ func main() {
 	}
 
 	session.ShouldReconnectVoiceConnOnError = false
-	cmdSync := sync.Map{}
-	cmds := []CustomCommandDef{
-		command.NewPlay(&cmdSync),
-		command.NewReact(&cmdSync),
-		command.NewRo(&cmdSync),
-		command.NewCurse(&cmdSync, swearsApiURL),
-		command.NewFeed(&cmdSync, swearsApiURL),
-		command.NewSwear(swearsApiURL),
+	cmds := []command.Definition{
+		command.NewPlay(context),
+		command.NewReact(context),
+		command.NewRo(context),
+		command.NewCurse(context),
+		command.NewFeed(context),
+		command.NewSwear(context),
 		command.NewAnime(),
 		command.NewManga(),
 		command.NewQuote(),
 	}
 
 	handlers := []any{
-		Join(logger),
-		InteractionCreate(cmds, logger),
+		command.Join(logger),
+		command.InteractionCreate(cmds, logger),
 	}
 
 	for _, handler := range handlers {
@@ -89,8 +91,8 @@ func main() {
 	}
 
 	session.Identify.Intents = getIntents()
-	session.ShardID = shardID
-	session.ShardCount = shardCount
+	session.ShardID = context.Index
+	session.ShardCount = context.Shards
 
 	err = session.Open()
 	defer session.Close()
@@ -105,7 +107,7 @@ func main() {
 	logger.Info("Bot shard count: ", "shardCount", session.ShardCount)
 
 	for _, command := range cmds {
-		_, err := session.ApplicationCommandCreate(session.State.User.ID, "", command.Definition())
+		_, err := session.ApplicationCommandCreate(session.State.User.ID, "", command.Data())
 
 		if err != nil {
 			logger.Error("Unexpected error while creating commands", "err", err)

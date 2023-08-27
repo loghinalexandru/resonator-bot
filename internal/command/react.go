@@ -1,14 +1,12 @@
 package command
 
 import (
-	"sync"
-
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/pkg/playback"
 )
 
-func NewReact(sync *sync.Map) *playback.Playback {
-	result, err := playback.New(sync, &discordgo.ApplicationCommand{
+func NewReact(ctx BotContext) *playback.Playback {
+	result, err := playback.New(ctx.Sync, &discordgo.ApplicationCommand{
 		Name:        "react",
 		Description: "This command is used to react with a sound in the chat!",
 		Options: []*discordgo.ApplicationCommandOption{

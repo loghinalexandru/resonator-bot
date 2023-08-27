@@ -13,8 +13,8 @@ type swearData struct {
 	Lang  string `json:"lang"`
 }
 
-func NewSwear(swearsURL string) *rest.REST[swearData] {
-	url := swearsURL + "/api/random?lang=%v"
+func NewSwear(ctx BotContext) *rest.REST[swearData] {
+	url := ctx.SwearsApiURL.String() + "/api/random?lang=%v"
 	def := &discordgo.ApplicationCommand{
 		Name:        "swear",
 		Description: "This command is used to play a TTS message of a random swear!",

@@ -57,7 +57,7 @@ func TestDefinition(t *testing.T) {
 		def: &discordgo.ApplicationCommand{},
 	}
 
-	if target.Definition() == nil {
+	if target.Data() == nil {
 		t.Error("this should not be nil")
 	}
 }
@@ -89,7 +89,7 @@ func TestHandlerWhenCallFails(t *testing.T) {
 		},
 	}
 
-	err := target.Handler(&discordgo.Session{}, cmdInter)
+	err := target.Handle(&discordgo.Session{}, cmdInter)
 
 	if err == nil || err.Error() != "call to URI failed" {
 		t.Error(err)
@@ -123,7 +123,7 @@ func TestHandler(t *testing.T) {
 		},
 	}
 
-	err := target.Handler(&discordgo.Session{}, cmdInter)
+	err := target.Handle(&discordgo.Session{}, cmdInter)
 
 	if err != nil {
 		t.Error(err)
