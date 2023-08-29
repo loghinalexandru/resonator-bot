@@ -95,6 +95,7 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 		return nil
 	}
 
+	defer mtx.Unlock()
 	err = botvc.Speaking(true)
 
 	if err != nil {
@@ -102,7 +103,6 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 		return err
 	}
 
-	defer mtx.Unlock()
 	defer func() {
 		err = errors.Join(err, botvc.Speaking(false))
 	}()

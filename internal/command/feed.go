@@ -2,6 +2,7 @@ package command
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/internal/bot"
 	"github.com/loghinalexandru/resonator/pkg/audio"
 	"github.com/loghinalexandru/resonator/pkg/playback"
 )
@@ -10,7 +11,7 @@ const (
 	remotePath = "/api/remote?codec=opus&id=%v"
 )
 
-func NewFeed(ctx BotContext) *playback.Playback {
+func newFeed(ctx *bot.Context) *playback.Playback {
 	result, err := playback.New(ctx.Sync, &discordgo.ApplicationCommand{
 		Name:        "feed",
 		Description: "This command is used to play remote youtube sound!",
@@ -23,7 +24,7 @@ func NewFeed(ctx BotContext) *playback.Playback {
 			},
 		},
 	},
-		playback.WithSource(audio.NewHTTP(ctx.SwearsApiURL.String()+remotePath)),
+		playback.WithSource(audio.NewHTTP(ctx.SwearsAPI.String()+remotePath)),
 	)
 
 	if err != nil {

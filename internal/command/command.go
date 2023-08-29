@@ -1,53 +1,50 @@
 package command
 
 import (
-	"net/url"
-	"sync"
-
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/internal/bot"
 )
 
-type Logger interface {
-	Debug(msg string, args ...any)
-	Info(msg string, args ...any)
-	Warn(msg string, args ...any)
-	Error(msg string, args ...any)
-}
-
-type Definition interface {
+type Handler interface {
 	Data() *discordgo.ApplicationCommand
 	Handle(sess *discordgo.Session, inter *discordgo.InteractionCreate) error
 }
 
-type BotContext struct {
-	Sync         *sync.Map
-	LogLvl       int
-	Token        string
-	SwearsApiURL *url.URL
-	Index        int
-	Shards       int
-}
+func Register(sess *discordgo.Session, ctx *bot.Context) error {
+	var commandsTable = make(map[string]Handler)
 
-func Join(logger Logger) func(*discordgo.Session, *discordgo.GuildCreate) {
-	return func(sess *discordgo.Session, gld *discordgo.GuildCreate) {
-		logger.Info("joined guild", "guildID", gld.ID)
+	cmds := []Handler{
+		newPlay(ctx),
+		newReact(ctx),
+		newRo(ctx),
+		newCurse(ctx),
+		newFeed(ctx),
+		newSwear(ctx),
+		newAnime(),
+		newManga(),
 	}
-}
-
-func InteractionCreate(cmds []Definition, logger Logger) func(*discordgo.Session, *discordgo.InteractionCreate) {
-	var commandsTable = make(map[string]Definition)
 
 	for _, cmd := range cmds {
 		commandsTable[cmd.Data().Name] = cmd
 	}
 
-	return func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
+	sess.AddHandler(func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 		if cmd, ok := commandsTable[interaction.ApplicationCommandData().Name]; ok {
 			err := cmd.Handle(session, interaction)
 
 			if err != nil {
-				logger.Error("Unexpected application error", "err", err)
+				ctx.Logger.Error("Unexpected application error", "err", err)
 			}
 		}
+	})
+
+	for _, command := range cmds {
+		_, err := sess.ApplicationCommandCreate(sess.State.User.ID, "", command.Data())
+		//Remove cmd on termination
+		if err != nil {
+			ctx.Logger.Error("Unexpected error while creating commands", "err", err)
+		}
 	}
+
+	return nil
 }

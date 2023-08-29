@@ -27,7 +27,7 @@ type animeWrapper struct {
 	Content []animeData `json:"data"`
 }
 
-func NewAnime() *rest.REST[animeWrapper] {
+func newAnime() *rest.REST[animeWrapper] {
 	url := "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=10"
 	def := &discordgo.ApplicationCommand{
 		Name:        "anime",

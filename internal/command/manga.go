@@ -31,7 +31,7 @@ type mangaWrapper struct {
 	Content []mangaData `json:"data"`
 }
 
-func NewManga() *rest.REST[mangaWrapper] {
+func newManga() *rest.REST[mangaWrapper] {
 	url := "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10"
 	def := &discordgo.ApplicationCommand{
 		Name:        "manga",

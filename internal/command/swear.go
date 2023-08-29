@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/internal/bot"
 	"github.com/loghinalexandru/resonator/pkg/rest"
 )
 
@@ -13,8 +14,8 @@ type swearData struct {
 	Lang  string `json:"lang"`
 }
 
-func NewSwear(ctx BotContext) *rest.REST[swearData] {
-	url := ctx.SwearsApiURL.String() + "/api/random?lang=%v"
+func newSwear(ctx *bot.Context) *rest.REST[swearData] {
+	url := ctx.SwearsAPI.String() + "/api/random?lang=%v"
 	def := &discordgo.ApplicationCommand{
 		Name:        "swear",
 		Description: "This command is used to play a TTS message of a random swear!",
