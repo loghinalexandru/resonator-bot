@@ -5,15 +5,19 @@ import (
 	"github.com/loghinalexandru/resonator/internal/bot"
 )
 
-type Handler interface {
+type handler interface {
 	Data() *discordgo.ApplicationCommand
 	Handle(sess *discordgo.Session, inter *discordgo.InteractionCreate) error
 }
 
-func Register(sess *discordgo.Session, ctx *bot.Context) error {
-	var commandsTable = make(map[string]Handler)
+type manager struct {
+	commands   []handler
+	registered []*discordgo.ApplicationCommand
+	ctx        *bot.Context
+}
 
-	cmds := []Handler{
+func NewManager(ctx *bot.Context) *manager {
+	cmds := []handler{
 		newPlay(ctx),
 		newReact(ctx),
 		newRo(ctx),
@@ -24,7 +28,17 @@ func Register(sess *discordgo.Session, ctx *bot.Context) error {
 		newManga(),
 	}
 
-	for _, cmd := range cmds {
+	return &manager{
+		commands:   cmds,
+		registered: make([]*discordgo.ApplicationCommand, len(cmds)),
+		ctx:        ctx,
+	}
+}
+
+func (m *manager) Register(sess *discordgo.Session) {
+	var commandsTable = make(map[string]handler)
+
+	for _, cmd := range m.commands {
 		commandsTable[cmd.Data().Name] = cmd
 	}
 
@@ -33,18 +47,26 @@ func Register(sess *discordgo.Session, ctx *bot.Context) error {
 			err := cmd.Handle(session, interaction)
 
 			if err != nil {
-				ctx.Logger.Error("Unexpected application error", "err", err)
+				m.ctx.Logger.Error("Unexpected application error", "err", err)
 			}
 		}
 	})
 
-	for _, command := range cmds {
-		_, err := sess.ApplicationCommandCreate(sess.State.User.ID, "", command.Data())
-		//Remove cmd on termination
+	for i, cmd := range m.commands {
+		r, err := sess.ApplicationCommandCreate(sess.State.User.ID, "", cmd.Data())
 		if err != nil {
-			ctx.Logger.Error("Unexpected error while creating commands", "err", err)
+			m.ctx.Logger.Error("Unexpected error while creating commands", "err", err, "name", cmd.Data().Name)
+		}
+
+		m.registered[i] = r
+	}
+}
+
+func (m *manager) Deregister(sess *discordgo.Session) {
+	for _, v := range m.registered {
+		err := sess.ApplicationCommandDelete(sess.State.User.ID, "", v.ID)
+		if err != nil {
+			m.ctx.Logger.Error("Unexpected error while deleting commands", "err", err)
 		}
 	}
-
-	return nil
 }

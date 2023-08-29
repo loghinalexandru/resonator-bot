@@ -26,14 +26,14 @@ type Context struct {
 func NewContext() *Context {
 	ctx := &Context{
 		Sync:      &sync.Map{},
-		SwearsAPI: swearsAPI("SWEARS_API_URL"),
+		SwearsAPI: envToURL("SWEARS_API_URL"),
 		Logger:    logWithLvl("LOG_LEVEL"),
 	}
 
 	return ctx
 }
 
-func swearsAPI(varName string) *url.URL {
+func envToURL(varName string) *url.URL {
 	res, err := url.Parse(os.Getenv(varName))
 	if err != nil {
 		panic(err)
@@ -48,6 +48,21 @@ func Token() string {
 
 func Intents() discordgo.Intent {
 	return discordgo.IntentsGuilds | discordgo.IntentsGuildMessages | discordgo.IntentsGuildVoiceStates
+}
+
+func Cleanup() bool {
+	c := os.Getenv("DEREGISTER_COMMANDS")
+	if c == "" {
+		return false
+	}
+
+	res, err := strconv.ParseBool(c)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return res
 }
 
 func ID() int {
@@ -79,10 +94,4 @@ func Shards() int {
 	}
 
 	return res
-}
-
-func Register(sess *discordgo.Session, ctx *Context) {
-	sess.AddHandler(func(sess *discordgo.Session, gld *discordgo.GuildCreate) {
-		ctx.Logger.Info("joined guild", "guildID", gld.ID)
-	})
 }
