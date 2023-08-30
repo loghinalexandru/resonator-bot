@@ -28,7 +28,7 @@ func newFeed(ctx *bot.Context) *playback.Playback {
 	)
 
 	if err != nil {
-		panic(err)
+		ctx.Logger.Error("Error creating /feed command", "err", err)
 	}
 
 	return result

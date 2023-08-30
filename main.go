@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -35,20 +36,15 @@ func main() {
 	cmdManager := command.NewManager(ctx)
 	cmdManager.Register(sess)
 
-	if err != nil {
-		panic(err)
-	}
+	ctx.Logger.Info("Bot is ready", "shardID", sess.ShardID, "shardCount", sess.ShardCount)
 
-	ctx.Logger.Info("Bot is ready!", "shardID", sess.ShardID, "shardCount", sess.ShardCount)
+	s, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-s.Done()
 
-	sigTerm := make(chan os.Signal, 1)
-	signal.Notify(sigTerm, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-sigTerm
-
-	ctx.Logger.Info("Bot is shutting down!")
+	ctx.Logger.Info("Bot is shutting down")
 
 	if bot.Cleanup() {
-		ctx.Logger.Info("Deregistering commands!")
+		ctx.Logger.Info("Deregistering commands")
 		cmdManager.Deregister(sess)
 	}
 }

@@ -71,6 +71,17 @@ func (cmd *Playback) Data() *discordgo.ApplicationCommand {
 
 func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.InteractionCreate) (err error) {
 	guild, _ := guild(sess, inter)
+	entry, _ := command.storage.LoadOrStore(guild.ID, &sync.Mutex{})
+	mtx := entry.(*sync.Mutex)
+	ok := mtx.TryLock()
+
+	if !ok {
+		respond(sess, inter, msgConcurrentPlayback)
+		return nil
+	}
+
+	defer mtx.Unlock()
+
 	botvc, exists := sess.VoiceConnections[guild.ID]
 
 	if !exists || inter.Member.User.ID != botvc.UserID {
@@ -86,16 +97,6 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 		return err
 	}
 
-	entry, _ := command.storage.LoadOrStore(guild.ID, &sync.Mutex{})
-	mtx := entry.(*sync.Mutex)
-	ok := mtx.TryLock()
-
-	if !ok {
-		respond(sess, inter, msgConcurrentPlayback)
-		return nil
-	}
-
-	defer mtx.Unlock()
 	err = botvc.Speaking(true)
 
 	if err != nil {

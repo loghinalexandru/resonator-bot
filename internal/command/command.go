@@ -24,8 +24,8 @@ func NewManager(ctx *bot.Context) *manager {
 		newCurse(ctx),
 		newFeed(ctx),
 		newSwear(ctx),
-		newAnime(),
-		newManga(),
+		newAnime(ctx),
+		newManga(ctx),
 	}
 
 	return &manager{
@@ -43,13 +43,17 @@ func (m *manager) Register(sess *discordgo.Session) {
 	}
 
 	sess.AddHandler(func(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-		if cmd, ok := commandsTable[interaction.ApplicationCommandData().Name]; ok {
+		name := interaction.ApplicationCommandData().Name
+		if cmd, ok := commandsTable[name]; ok {
+			m.ctx.Logger.Info("Handling command", "cmd", name)
 			err := cmd.Handle(session, interaction)
 
 			if err != nil {
 				m.ctx.Logger.Error("Unexpected application error", "err", err)
 			}
 		}
+
+		m.ctx.Logger.Warn("Could not find handler for command", "cmd", name)
 	})
 
 	for i, cmd := range m.commands {

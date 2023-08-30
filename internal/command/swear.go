@@ -46,7 +46,7 @@ func newSwear(ctx *bot.Context) *rest.REST[swearData] {
 	result, err := rest.New(def, url, rest.WithFormatter[swearData](swearFormatter))
 
 	if err != nil {
-		panic(err)
+		ctx.Logger.Error("Error creating /swear command", "err", err)
 	}
 
 	return result

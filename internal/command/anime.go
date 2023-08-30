@@ -5,7 +5,12 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/internal/bot"
 	"github.com/loghinalexandru/resonator/pkg/rest"
+)
+
+const (
+	animeURL = "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=10"
 )
 
 type animeData struct {
@@ -27,8 +32,7 @@ type animeWrapper struct {
 	Content []animeData `json:"data"`
 }
 
-func newAnime() *rest.REST[animeWrapper] {
-	url := "https://kitsu.io/api/edge/anime?filter[text]=%v&page[limit]=10"
+func newAnime(ctx *bot.Context) *rest.REST[animeWrapper] {
 	def := &discordgo.ApplicationCommand{
 		Name:        "anime",
 		Description: "This command is used find anime via Kitsu API!",
@@ -42,10 +46,10 @@ func newAnime() *rest.REST[animeWrapper] {
 		},
 	}
 
-	result, err := rest.New(def, url, rest.WithFormatter[animeWrapper](animeFormatter))
+	result, err := rest.New(def, animeURL, rest.WithFormatter[animeWrapper](animeFormatter))
 
 	if err != nil {
-		panic(err)
+		ctx.Logger.Error("Error creating /anime command", "err", err)
 	}
 
 	return result

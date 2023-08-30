@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/loghinalexandru/resonator/internal/bot"
 	"github.com/loghinalexandru/resonator/pkg/rest"
 )
 
@@ -27,12 +28,15 @@ type mangaData struct {
 	} `json:"attributes"`
 }
 
+const (
+	mangaURL = "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10"
+)
+
 type mangaWrapper struct {
 	Content []mangaData `json:"data"`
 }
 
-func newManga() *rest.REST[mangaWrapper] {
-	url := "https://kitsu.io/api/edge/manga?filter[text]=%v&filter[subtype]=manga&page[limit]=10"
+func newManga(ctx *bot.Context) *rest.REST[mangaWrapper] {
 	def := &discordgo.ApplicationCommand{
 		Name:        "manga",
 		Description: "This command is used find manga via Kitsu API!",
@@ -46,10 +50,10 @@ func newManga() *rest.REST[mangaWrapper] {
 		},
 	}
 
-	result, err := rest.New(def, url, rest.WithFormatter[mangaWrapper](mangaFormatter))
+	result, err := rest.New(def, mangaURL, rest.WithFormatter[mangaWrapper](mangaFormatter))
 
 	if err != nil {
-		panic(err)
+		ctx.Logger.Error("Error creating /manga command", "err", err)
 	}
 
 	return result

@@ -42,7 +42,7 @@ func newCurse(ctx *bot.Context) *playback.Playback {
 	)
 
 	if err != nil {
-		panic(err)
+		ctx.Logger.Error("Error creating /curse command", "err", err)
 	}
 
 	return result
