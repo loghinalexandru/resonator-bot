@@ -24,8 +24,8 @@ func StartMetricsServer(botContext *Context) shutdownFunc {
 	reg.MustRegister(
 		collectors.NewGoCollector(),
 		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
-		botContext.Metrics.ErrCounter,
-		botContext.Metrics.ReqCounter,
+		botContext.Err,
+		botContext.Req,
 	)
 
 	mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
