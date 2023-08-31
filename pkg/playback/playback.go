@@ -24,9 +24,9 @@ var (
 	ErrTimeout     = errors.New("opus frame timeout")
 	ErrHttpClient  = errors.New("missing http client")
 	ErrAudioSource = errors.New("missing audio source")
-	voice          = joinVoice
-	guild          = getGuild
-	respond        = sendResp
+	voice          = discordgoVoice
+	guild          = discordgoGuild
+	respond        = discordgoResp
 )
 
 type playbackOpt func(*Playback) error
@@ -80,6 +80,7 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 		return nil
 	}
 
+	//Add a fast interaction response with discordgo.MessageFlagsLoading
 	defer mtx.Unlock()
 
 	botvc, exists := sess.VoiceConnections[guild.ID]
@@ -154,16 +155,16 @@ func playSound(soundBuff chan<- []byte, fh io.ReadCloser) error {
 }
 
 // Seam functions for testing purposes
-func joinVoice(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
+func discordgoVoice(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
 	return sess.ChannelVoiceJoin(guildID, voiceID, mute, deaf)
 }
 
-func getGuild(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
+func discordgoGuild(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
 	channel, _ := sess.State.Channel(inter.ChannelID)
 	return sess.State.Guild(channel.GuildID)
 }
 
-func sendResp(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+func discordgoResp(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
 	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{

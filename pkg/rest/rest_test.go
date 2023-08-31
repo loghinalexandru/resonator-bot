@@ -133,13 +133,7 @@ func TestHandler(t *testing.T) {
 func TestCreateResponse(t *testing.T) {
 	t.Parallel()
 
-	target := &REST[empty]{
-		formatter: func(payload empty) string {
-			return tstMessage
-		},
-	}
-
-	got := target.createReponse(empty{})
+	got := createReponse(tstMessage)
 
 	if got.Data.Content != tstMessage {
 		t.Errorf("want %q, got %q", tstMessage, got.Data.Content)

@@ -14,7 +14,7 @@ var (
 	ErrCallFailed    = errors.New("call to URI failed")
 	ErrHttpClient    = errors.New("missing http client")
 	ErrRespFormatter = errors.New("missing response formatter")
-	respond          = sendResp
+	respond          = discordgoResp
 )
 
 const (
@@ -90,15 +90,8 @@ func (cmd *REST[T]) Handle(sess *discordgo.Session, inter *discordgo.Interaction
 	}
 
 	if response.StatusCode != http.StatusOK {
-		interResp := &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: msgCallFailed,
-				Flags:   discordgo.MessageFlagsEphemeral,
-			},
-		}
-
-		respond(sess, inter.Interaction, interResp)
+		r := createReponse(msgCallFailed, discordgo.MessageFlagsEphemeral)
+		respond(sess, inter.Interaction, r)
 		return ErrCallFailed
 	}
 
@@ -111,20 +104,27 @@ func (cmd *REST[T]) Handle(sess *discordgo.Session, inter *discordgo.Interaction
 		return err
 	}
 
-	respond(sess, inter.Interaction, cmd.createReponse(data))
+	respond(sess, inter.Interaction, createReponse(cmd.formatter(data)))
 	return nil
 }
 
-// Seam functions for testing
-func (cmd *REST[T]) createReponse(data T) *discordgo.InteractionResponse {
+func createReponse(data string, flags ...discordgo.MessageFlags) *discordgo.InteractionResponse {
+	var result discordgo.MessageFlags
+
+	for _, f := range flags {
+		result = result | f
+	}
+
 	return &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: cmd.formatter(data),
+			Content: data,
+			Flags:   result,
 		},
 	}
 }
 
-func sendResp(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) {
+// Seam functions for testing
+func discordgoResp(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) {
 	sess.InteractionRespond(inter, resp)
 }
