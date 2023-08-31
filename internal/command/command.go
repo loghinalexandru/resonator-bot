@@ -69,9 +69,11 @@ func (m *manager) interactionCreate(session *discordgo.Session, interaction *dis
 	name := interaction.ApplicationCommandData().Name
 	if cmd, ok := m.commands[name]; ok {
 		m.ctx.Logger.Info("Handling command", "cmd", name)
+		m.ctx.Metrics.ReqCounter.Inc()
 		err := cmd.Handle(session, interaction)
 
 		if err != nil {
+			m.ctx.Metrics.ErrCounter.Inc()
 			m.ctx.Logger.Error("Unexpected application error", "err", err)
 		}
 	} else {

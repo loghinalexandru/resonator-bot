@@ -26,7 +26,8 @@ var (
 	ErrAudioSource = errors.New("missing audio source")
 	voice          = discordgoVoice
 	guild          = discordgoGuild
-	respond        = discordgoResp
+	defferResponse = discordgoInteractionResp
+	respond        = discordgoInteractionEdit
 )
 
 type playbackOpt func(*Playback) error
@@ -70,6 +71,8 @@ func (cmd *Playback) Data() *discordgo.ApplicationCommand {
 }
 
 func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.InteractionCreate) (err error) {
+	defferResponse(sess, inter)
+
 	guild, _ := guild(sess, inter)
 	entry, _ := command.storage.LoadOrStore(guild.ID, &sync.Mutex{})
 	mtx := entry.(*sync.Mutex)
@@ -80,7 +83,6 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 		return nil
 	}
 
-	//Add a fast interaction response with discordgo.MessageFlagsLoading
 	defer mtx.Unlock()
 
 	botvc, exists := sess.VoiceConnections[guild.ID]
@@ -164,12 +166,17 @@ func discordgoGuild(sess *discordgo.Session, inter *discordgo.InteractionCreate)
 	return sess.State.Guild(channel.GuildID)
 }
 
-func discordgoResp(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+func discordgoInteractionResp(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: msg,
-			Flags:   discordgo.MessageFlagsEphemeral,
+			Flags: discordgo.MessageFlagsEphemeral,
 		},
+	})
+}
+
+func discordgoInteractionEdit(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+	session.InteractionResponseEdit(interaction.Interaction, &discordgo.WebhookEdit{
+		Content: &msg,
 	})
 }

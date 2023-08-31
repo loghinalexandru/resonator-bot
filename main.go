@@ -38,6 +38,9 @@ func main() {
 
 	ctx.Logger.Info("Bot is ready", "shardID", sess.ShardID, "shardCount", sess.ShardCount)
 
+	shutdown := bot.StartMetricsServer(ctx)
+	defer shutdown()
+
 	s, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-s.Done()
 

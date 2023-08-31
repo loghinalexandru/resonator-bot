@@ -105,7 +105,8 @@ func TestHandlerWhenCalledCreatesMutex(t *testing.T) {
 
 	voice = joinVoiceStub
 	guild = getGuildStub
-	respond = sendRespStub
+	defferResponse = defferRespStub
+	respond = editRespStub
 
 	inter := &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{
@@ -160,7 +161,9 @@ func getGuildStub(sess *discordgo.Session, inter *discordgo.InteractionCreate) (
 	}, nil
 }
 
-func sendRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+func defferRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
+}
+func editRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
 }
 
 type RoundTripFunc func(req *http.Request) *http.Response

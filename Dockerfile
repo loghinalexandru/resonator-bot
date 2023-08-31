@@ -16,4 +16,6 @@ WORKDIR /
 COPY --link --from=build /resonator /resonator
 COPY --link --from=build /app/misc /misc
 
+EXPOSE 8081
+
 ENTRYPOINT ["/resonator"]

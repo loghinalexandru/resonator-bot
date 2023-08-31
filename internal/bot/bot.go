@@ -20,6 +20,7 @@ type Logger interface {
 type Context struct {
 	Sync      *sync.Map
 	SwearsAPI *url.URL
+	Metrics   *Metrics
 	Logger    Logger
 }
 
@@ -28,6 +29,7 @@ func NewContext() *Context {
 		Sync:      &sync.Map{},
 		SwearsAPI: envToURL("SWEARS_API_URL"),
 		Logger:    logWithLvl("LOG_LEVEL"),
+		Metrics:   newMetrics(),
 	}
 
 	return ctx
