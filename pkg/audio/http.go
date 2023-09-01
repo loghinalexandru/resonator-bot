@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrContent = errors.New("could not retreive data from provided URL")
+	ErrContent = errors.New("could not retrieve data from provided URL")
 )
 
 type httpProvider struct {

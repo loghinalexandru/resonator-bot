@@ -71,7 +71,11 @@ func (cmd *Playback) Data() *discordgo.ApplicationCommand {
 }
 
 func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.InteractionCreate) (err error) {
-	defferResponse(sess, inter)
+	err = defferResponse(sess, inter)
+
+	if err != nil {
+		return err
+	}
 
 	guild, _ := guild(sess, inter)
 	entry, _ := command.storage.LoadOrStore(guild.ID, &sync.Mutex{})
@@ -79,7 +83,11 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 	ok := mtx.TryLock()
 
 	if !ok {
-		respond(sess, inter, msgConcurrentPlayback)
+		err = respond(sess, inter, msgConcurrentPlayback)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}
 
@@ -96,15 +104,13 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 	}
 
 	if botvc == nil || err != nil {
-		respond(sess, inter, msgMissingVoiceChannel)
-		return err
+		return errors.Join(err, respond(sess, inter, msgMissingVoiceChannel))
 	}
 
 	err = botvc.Speaking(true)
 
 	if err != nil {
-		respond(sess, inter, msgErrorOnSpeak)
-		return err
+		return errors.Join(err, respond(sess, inter, msgErrorOnSpeak))
 	}
 
 	defer func() {
@@ -115,13 +121,15 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 	audio, err := command.src.Audio(userOpt)
 
 	if err != nil {
-		respond(sess, inter, msgMissingAudio)
+		return errors.Join(err, respond(sess, inter, msgMissingAudio))
+	}
+
+	err = respond(sess, inter, msgSuccess)
+	if err != nil {
 		return err
 	}
 
-	respond(sess, inter, msgSuccess)
 	err = playSound(botvc.OpusSend, audio)
-
 	if err != nil {
 		return err
 	}
@@ -166,8 +174,8 @@ func discordgoGuild(sess *discordgo.Session, inter *discordgo.InteractionCreate)
 	return sess.State.Guild(channel.GuildID)
 }
 
-func discordgoInteractionResp(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
+func discordgoInteractionResp(session *discordgo.Session, interaction *discordgo.InteractionCreate) error {
+	return session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Flags: discordgo.MessageFlagsEphemeral,
@@ -175,8 +183,10 @@ func discordgoInteractionResp(session *discordgo.Session, interaction *discordgo
 	})
 }
 
-func discordgoInteractionEdit(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
-	session.InteractionResponseEdit(interaction.Interaction, &discordgo.WebhookEdit{
+func discordgoInteractionEdit(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) error {
+	_, err := session.InteractionResponseEdit(interaction.Interaction, &discordgo.WebhookEdit{
 		Content: &msg,
 	})
+
+	return err
 }

@@ -161,19 +161,15 @@ func getGuildStub(sess *discordgo.Session, inter *discordgo.InteractionCreate) (
 	}, nil
 }
 
-func defferRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
+func defferRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate) error {
+	return nil
 }
-func editRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) {
+func editRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) error {
+	return nil
 }
 
 type RoundTripFunc func(req *http.Request) *http.Response
 
 func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req), nil
-}
-
-func newTestClient(fn RoundTripFunc) *http.Client {
-	return &http.Client{
-		Transport: RoundTripFunc(fn),
-	}
 }

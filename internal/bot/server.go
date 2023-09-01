@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	timeout = 5 * time.Second
+	shutdownTimeout   = 5 * time.Second
+	readHeaderTimeout = 3 * time.Second
 )
 
 type shutdownFunc func()
@@ -30,8 +31,9 @@ func StartMetricsServer(botContext *Context) shutdownFunc {
 
 	mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 	server := &http.Server{
-		Addr:    ":8081",
-		Handler: mux,
+		Addr:              ":8081",
+		Handler:           mux,
+		ReadHeaderTimeout: readHeaderTimeout,
 	}
 
 	go func() {
@@ -42,7 +44,7 @@ func StartMetricsServer(botContext *Context) shutdownFunc {
 	}()
 
 	return func() {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
 
 		err := server.Shutdown(ctx)

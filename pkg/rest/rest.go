@@ -31,10 +31,10 @@ type REST[T any] struct {
 	def       *discordgo.ApplicationCommand
 }
 
-func New[T any](definition *discordgo.ApplicationCommand, URL string, opts ...restOpt[T]) (*REST[T], error) {
+func New[T any](definition *discordgo.ApplicationCommand, url string, opts ...restOpt[T]) (*REST[T], error) {
 	result := &REST[T]{
 		def:       definition,
-		baseURL:   URL,
+		baseURL:   url,
 		client:    http.DefaultClient,
 		formatter: func(p T) string { return fmt.Sprint(p) },
 	}
@@ -91,20 +91,24 @@ func (cmd *REST[T]) Handle(sess *discordgo.Session, inter *discordgo.Interaction
 
 	if response.StatusCode != http.StatusOK {
 		r := createReponse(msgCallFailed, discordgo.MessageFlagsEphemeral)
-		respond(sess, inter.Interaction, r)
-		return ErrCallFailed
+		err = respond(sess, inter.Interaction, r)
+
+		return errors.Join(err, ErrCallFailed)
 	}
 
 	defer response.Body.Close()
 	content, _ := io.ReadAll(response.Body)
 
 	err = json.Unmarshal(content, &data)
-
 	if err != nil {
 		return err
 	}
 
-	respond(sess, inter.Interaction, createReponse(cmd.formatter(data)))
+	err = respond(sess, inter.Interaction, createReponse(cmd.formatter(data)))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -112,7 +116,7 @@ func createReponse(data string, flags ...discordgo.MessageFlags) *discordgo.Inte
 	var result discordgo.MessageFlags
 
 	for _, f := range flags {
-		result = result | f
+		result |= f
 	}
 
 	return &discordgo.InteractionResponse{
@@ -125,6 +129,6 @@ func createReponse(data string, flags ...discordgo.MessageFlags) *discordgo.Inte
 }
 
 // Seam functions for testing
-func discordgoResp(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) {
-	sess.InteractionRespond(inter, resp)
+func discordgoResp(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) error {
+	return sess.InteractionRespond(inter, resp)
 }

@@ -16,7 +16,9 @@ const (
 type empty struct{}
 
 func init() {
-	respond = func(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) {}
+	respond = func(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) error {
+		return nil
+	}
 }
 
 func TestNew(t *testing.T) {
