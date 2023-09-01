@@ -46,20 +46,23 @@ func NewManager(ctx *bot.Context) *manager {
 		registered: make([]*discordgo.ApplicationCommand, len(hh)),
 		ctx:        ctx,
 		Request: promauto.NewCounterVec(prometheus.CounterOpts{
-			Subsystem: "resonator",
-			Name:      "command_requests_total",
-			Help:      "The total number of commands invoked",
+			Subsystem:   "resonator",
+			Name:        "command_requests_total",
+			Help:        "The total number of commands invoked",
+			ConstLabels: prometheus.Labels{"shard": bot.RawID()},
 		}, []string{"command"}),
 		Error: promauto.NewCounterVec(prometheus.CounterOpts{
-			Subsystem: "resonator",
-			Name:      "command_errors_total",
-			Help:      "The total number of commands errors",
+			Subsystem:   "resonator",
+			Name:        "command_errors_total",
+			Help:        "The total number of commands errors",
+			ConstLabels: prometheus.Labels{"shard": bot.RawID()},
 		}, []string{"command"}),
 		Duration: promauto.NewHistogramVec(prometheus.HistogramOpts{
-			Subsystem: "resonator",
-			Name:      "command_duration_seconds",
-			Help:      "The duration of a command invocation",
-			Buckets:   []float64{.1, .25, .5, 1, 2.5, 5, 10},
+			Subsystem:   "resonator",
+			Name:        "command_duration_seconds",
+			Help:        "The duration of a command invocation",
+			ConstLabels: prometheus.Labels{"shard": bot.RawID()},
+			Buckets:     []float64{.1, .25, .5, 1, 2.5, 5, 10},
 		}, []string{"command"}),
 	}
 }

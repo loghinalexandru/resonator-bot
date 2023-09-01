@@ -81,6 +81,10 @@ func ID() int {
 	return res
 }
 
+func RawID() string {
+	return os.Getenv("SHARD_ID")
+}
+
 func Shards() int {
 	replicas := os.Getenv("SHARD_COUNT")
 	if replicas == "" {
