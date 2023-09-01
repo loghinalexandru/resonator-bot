@@ -1,8 +1,12 @@
 package command
 
 import (
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/internal/bot"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 type handler interface {
@@ -14,6 +18,9 @@ type manager struct {
 	commands   map[string]handler
 	registered []*discordgo.ApplicationCommand
 	ctx        *bot.Context
+	Request    *prometheus.CounterVec
+	Error      *prometheus.CounterVec
+	Duration   *prometheus.HistogramVec
 }
 
 func NewManager(ctx *bot.Context) *manager {
@@ -38,6 +45,22 @@ func NewManager(ctx *bot.Context) *manager {
 		commands:   cmds,
 		registered: make([]*discordgo.ApplicationCommand, len(hh)),
 		ctx:        ctx,
+		Request: promauto.NewCounterVec(prometheus.CounterOpts{
+			Subsystem: "resonator",
+			Name:      "command_requests_total",
+			Help:      "The total number of commands invoked",
+		}, []string{"command"}),
+		Error: promauto.NewCounterVec(prometheus.CounterOpts{
+			Subsystem: "resonator",
+			Name:      "command_errors_total",
+			Help:      "The total number of commands errors",
+		}, []string{"command"}),
+		Duration: promauto.NewHistogramVec(prometheus.HistogramOpts{
+			Subsystem: "resonator",
+			Name:      "command_duration_seconds",
+			Help:      "The duration of a command invocation",
+			Buckets:   []float64{.1, .25, .5, 1, 2.5, 5, 10},
+		}, []string{"command"}),
 	}
 }
 
@@ -67,16 +90,23 @@ func (m *manager) Deregister(sess *discordgo.Session) {
 
 func (m *manager) interactionCreate(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	name := interaction.ApplicationCommandData().Name
-	if cmd, ok := m.commands[name]; ok {
-		m.ctx.Logger.Info("Handling command", "cmd", name)
-		m.ctx.Req.Inc()
-		err := cmd.Handle(session, interaction)
+	cmd, ok := m.commands[name]
 
-		if err != nil {
-			m.ctx.Err.Inc()
-			m.ctx.Logger.Error("Unexpected application error", "err", err)
-		}
-	} else {
-		m.ctx.Logger.Warn("Could not find handler for command", "name", name)
+	if !ok {
+		m.ctx.Logger.Error("Could not find handler for command", "name", name)
+		return
 	}
+
+	start := time.Now()
+
+	m.Request.With(prometheus.Labels{"command": name}).Inc()
+	err := cmd.Handle(session, interaction)
+
+	if err != nil {
+		m.ctx.Logger.Error("Unexpected application error", "err", err)
+		m.Error.With(prometheus.Labels{"command": name}).Inc()
+		return
+	}
+
+	m.Duration.With(prometheus.Labels{"command": name}).Observe(time.Since(start).Seconds())
 }

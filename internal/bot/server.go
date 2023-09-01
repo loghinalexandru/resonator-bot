@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
@@ -18,16 +17,8 @@ const (
 
 type shutdownFunc func()
 
-func StartMetricsServer(botContext *Context) shutdownFunc {
+func StartMetricsServer(logger Logger, reg *prometheus.Registry) shutdownFunc {
 	mux := http.NewServeMux()
-	reg := prometheus.NewRegistry()
-
-	reg.MustRegister(
-		collectors.NewGoCollector(),
-		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
-		botContext.Err,
-		botContext.Req,
-	)
 
 	mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))
 	server := &http.Server{
@@ -39,7 +30,7 @@ func StartMetricsServer(botContext *Context) shutdownFunc {
 	go func() {
 		err := server.ListenAndServe()
 		if !errors.Is(err, http.ErrServerClosed) {
-			botContext.Logger.Error("Unexpected error on metrics server", "err", err)
+			logger.Error("Unexpected error on metrics server", "err", err)
 		}
 	}()
 
@@ -48,9 +39,8 @@ func StartMetricsServer(botContext *Context) shutdownFunc {
 		defer cancel()
 
 		err := server.Shutdown(ctx)
-
 		if err != nil {
-			botContext.Logger.Error("Unexpected error on closing metrics server", "err", err)
+			logger.Error("Unexpected error on closing metrics server", "err", err)
 		}
 	}
 }

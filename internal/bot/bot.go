@@ -8,8 +8,6 @@ import (
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 type Logger interface {
@@ -23,8 +21,6 @@ type Context struct {
 	Sync      *sync.Map
 	SwearsAPI *url.URL
 	Logger    Logger
-	Req       prometheus.Counter
-	Err       prometheus.Counter
 }
 
 func NewContext() *Context {
@@ -32,14 +28,6 @@ func NewContext() *Context {
 		Sync:      &sync.Map{},
 		SwearsAPI: envToURL("SWEARS_API_URL"),
 		Logger:    logWithLvl("LOG_LEVEL"),
-		Req: promauto.NewCounter(prometheus.CounterOpts{
-			Name: "resonator_commands_invoked_total",
-			Help: "The total number of commands invoked",
-		}),
-		Err: promauto.NewCounter(prometheus.CounterOpts{
-			Name: "resonator_command_errors_total",
-			Help: "The total number of commands errors",
-		}),
 	}
 
 	return ctx
