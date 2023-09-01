@@ -50,6 +50,7 @@ func Intents() discordgo.Intent {
 	return discordgo.IntentsGuilds | discordgo.IntentsGuildMessages | discordgo.IntentsGuildVoiceStates
 }
 
+// Move to flags pkg
 func Cleanup() bool {
 	c := os.Getenv("DEREGISTER_COMMANDS")
 	if c == "" {
@@ -79,10 +80,6 @@ func ID() int {
 	}
 
 	return res
-}
-
-func RawID() string {
-	return os.Getenv("SHARD_ID")
 }
 
 func Shards() int {
