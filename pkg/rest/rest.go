@@ -13,7 +13,6 @@ import (
 var (
 	ErrCallFailed    = errors.New("call to URI failed")
 	ErrRespFormatter = errors.New("missing response formatter")
-	respond          = discordgoResp
 )
 
 const (
