@@ -103,11 +103,6 @@ func TestPlaySoundWithInvalidHandler(t *testing.T) {
 func TestHandlerWhenCalledCreatesMutex(t *testing.T) {
 	t.Parallel()
 
-	voice = joinVoiceStub
-	guild = getGuildStub
-	defferResponse = defferRespStub
-	respond = editRespStub
-
 	inter := &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{
 			Type: discordgo.InteractionApplicationCommand,
@@ -126,8 +121,12 @@ func TestHandlerWhenCalledCreatesMutex(t *testing.T) {
 		},
 	}
 	target := &Playback{
-		def:     &discordgo.ApplicationCommand{},
-		storage: &sync.Map{},
+		def:       &discordgo.ApplicationCommand{},
+		storage:   &sync.Map{},
+		voiceFunc: joinVoiceStub,
+		guildFunc: getGuildStub,
+		respFunc:  defferRespStub,
+		editFunc:  editRespStub,
 	}
 
 	err := target.Handle(&discordgo.Session{}, inter)
@@ -146,11 +145,11 @@ func TestHandlerWhenCalledCreatesMutex(t *testing.T) {
 	}
 }
 
-func joinVoiceStub(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
+func joinVoiceStub(_ *discordgo.Session, _, _ string, _, _ bool) (*discordgo.VoiceConnection, error) {
 	return &discordgo.VoiceConnection{}, nil
 }
 
-func getGuildStub(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error) {
+func getGuildStub(_ *discordgo.Session, _ *discordgo.InteractionCreate) (*discordgo.Guild, error) {
 	return &discordgo.Guild{
 		ID: "test",
 		VoiceStates: []*discordgo.VoiceState{
@@ -161,10 +160,10 @@ func getGuildStub(sess *discordgo.Session, inter *discordgo.InteractionCreate) (
 	}, nil
 }
 
-func defferRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate) error {
+func defferRespStub(_ *discordgo.Session, _ *discordgo.InteractionCreate) error {
 	return nil
 }
-func editRespStub(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) error {
+func editRespStub(_ *discordgo.Session, _ *discordgo.InteractionCreate, _ string) error {
 	return nil
 }
 

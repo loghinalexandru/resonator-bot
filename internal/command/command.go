@@ -14,7 +14,7 @@ type handler interface {
 	Handle(sess *discordgo.Session, inter *discordgo.InteractionCreate) error
 }
 
-type manager struct {
+type Manager struct {
 	commands   map[string]handler
 	registered []*discordgo.ApplicationCommand
 	ctx        *bot.Context
@@ -23,7 +23,7 @@ type manager struct {
 	Duration   *prometheus.HistogramVec
 }
 
-func NewManager(ctx *bot.Context) *manager {
+func NewManager(ctx *bot.Context) *Manager {
 	hh := []handler{
 		newPlay(ctx),
 		newReact(ctx),
@@ -41,7 +41,7 @@ func NewManager(ctx *bot.Context) *manager {
 		cmds[h.Data().Name] = h
 	}
 
-	return &manager{
+	return &Manager{
 		commands:   cmds,
 		registered: make([]*discordgo.ApplicationCommand, len(hh)),
 		ctx:        ctx,
@@ -64,7 +64,7 @@ func NewManager(ctx *bot.Context) *manager {
 	}
 }
 
-func (m *manager) Register(sess *discordgo.Session) {
+func (m *Manager) Register(sess *discordgo.Session) {
 	sess.AddHandler(m.interactionCreate)
 
 	i := 0
@@ -79,7 +79,7 @@ func (m *manager) Register(sess *discordgo.Session) {
 	}
 }
 
-func (m *manager) Deregister(sess *discordgo.Session) {
+func (m *Manager) Deregister(sess *discordgo.Session) {
 	for _, v := range m.registered {
 		err := sess.ApplicationCommandDelete(sess.State.User.ID, "", v.ID)
 		if err != nil {
@@ -88,7 +88,7 @@ func (m *manager) Deregister(sess *discordgo.Session) {
 	}
 }
 
-func (m *manager) interactionCreate(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
+func (m *Manager) interactionCreate(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	name := interaction.ApplicationCommandData().Name
 	cmd, ok := m.commands[name]
 

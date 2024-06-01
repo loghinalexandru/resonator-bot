@@ -15,9 +15,9 @@ const (
 	readHeaderTimeout = 3 * time.Second
 )
 
-type shutdownFunc func()
+type ShutdownFunc func()
 
-func StartMetricsServer(logger Logger, reg *prometheus.Registry) shutdownFunc {
+func StartMetricsServer(logger Logger, reg *prometheus.Registry) ShutdownFunc {
 	mux := http.NewServeMux()
 
 	mux.Handle("/metrics", promhttp.HandlerFor(reg, promhttp.HandlerOpts{Registry: reg}))

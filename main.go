@@ -32,7 +32,7 @@ func main() {
 		return
 	}
 
-	sess.ShouldReconnectVoiceConnOnError = false
+	sess.ShouldReconnectVoiceOnSessionError = false
 	sess.Identify.Intents = bot.Intents()
 	sess.ShardID = bot.ID()
 	sess.ShardCount = bot.Shards()
@@ -57,7 +57,7 @@ func main() {
 	ctx.Logger.Info("Bot is shutting down")
 
 	if bot.Cleanup() {
-		ctx.Logger.Info("Deregistering commands")
+		ctx.Logger.Info("Unregistering commands")
 		cmdManager.Deregister(sess)
 	}
 }

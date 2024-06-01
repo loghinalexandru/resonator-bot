@@ -12,7 +12,6 @@ import (
 
 var (
 	ErrCallFailed    = errors.New("call to URI failed")
-	ErrHttpClient    = errors.New("missing http client")
 	ErrRespFormatter = errors.New("missing response formatter")
 	respond          = discordgoResp
 )
@@ -21,22 +20,30 @@ const (
 	msgCallFailed = "Service can not be reached!"
 )
 
-type restOpt[T any] func(*REST[T]) error
-type respFmt[T any] func(payload T) string
+type interactionResp func(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) error
+
+type Opt[T any] func(*REST[T]) error
+type Formatter[T any] func(payload T) string
 
 type REST[T any] struct {
 	baseURL   string
-	formatter respFmt[T]
+	formatter Formatter[T]
 	client    *http.Client
 	def       *discordgo.ApplicationCommand
+	resp      interactionResp
 }
 
-func New[T any](definition *discordgo.ApplicationCommand, url string, opts ...restOpt[T]) (*REST[T], error) {
+func New[T any](definition *discordgo.ApplicationCommand, url string, opts ...Opt[T]) (*REST[T], error) {
+	return newInternal(definition, url, discordgoResp, opts...)
+}
+
+func newInternal[T any](definition *discordgo.ApplicationCommand, url string, resp interactionResp, opts ...Opt[T]) (*REST[T], error) {
 	result := &REST[T]{
 		def:       definition,
 		baseURL:   url,
 		client:    http.DefaultClient,
 		formatter: func(p T) string { return fmt.Sprint(p) },
+		resp:      resp,
 	}
 
 	for _, opt := range opts {
@@ -49,18 +56,7 @@ func New[T any](definition *discordgo.ApplicationCommand, url string, opts ...re
 	return result, nil
 }
 
-func WithHttpClient[T any](c *http.Client) restOpt[T] {
-	return func(r *REST[T]) error {
-		if r.client == nil {
-			return ErrHttpClient
-		}
-
-		r.client = c
-		return nil
-	}
-}
-
-func WithFormatter[T any](f respFmt[T]) restOpt[T] {
+func WithFormatter[T any](f Formatter[T]) Opt[T] {
 	return func(r *REST[T]) error {
 		if r.client == nil {
 			return ErrRespFormatter
@@ -90,8 +86,8 @@ func (cmd *REST[T]) Handle(sess *discordgo.Session, inter *discordgo.Interaction
 	}
 
 	if response.StatusCode != http.StatusOK {
-		r := createReponse(msgCallFailed, discordgo.MessageFlagsEphemeral)
-		err = respond(sess, inter.Interaction, r)
+		r := createResponse(msgCallFailed, discordgo.MessageFlagsEphemeral)
+		err = cmd.resp(sess, inter.Interaction, r)
 
 		return errors.Join(err, ErrCallFailed)
 	}
@@ -104,7 +100,7 @@ func (cmd *REST[T]) Handle(sess *discordgo.Session, inter *discordgo.Interaction
 		return err
 	}
 
-	err = respond(sess, inter.Interaction, createReponse(cmd.formatter(data)))
+	err = cmd.resp(sess, inter.Interaction, createResponse(cmd.formatter(data)))
 	if err != nil {
 		return err
 	}
@@ -112,7 +108,7 @@ func (cmd *REST[T]) Handle(sess *discordgo.Session, inter *discordgo.Interaction
 	return nil
 }
 
-func createReponse(data string, flags ...discordgo.MessageFlags) *discordgo.InteractionResponse {
+func createResponse(data string, flags ...discordgo.MessageFlags) *discordgo.InteractionResponse {
 	var result discordgo.MessageFlags
 
 	for _, f := range flags {
@@ -128,7 +124,6 @@ func createReponse(data string, flags ...discordgo.MessageFlags) *discordgo.Inte
 	}
 }
 
-// Seam functions for testing
 func discordgoResp(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) error {
 	return sess.InteractionRespond(inter, resp)
 }

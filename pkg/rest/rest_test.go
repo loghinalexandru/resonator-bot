@@ -15,12 +15,6 @@ const (
 
 type empty struct{}
 
-func init() {
-	respond = func(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) error {
-		return nil
-	}
-}
-
 func TestNew(t *testing.T) {
 	t.Parallel()
 
@@ -56,7 +50,8 @@ func TestDefinition(t *testing.T) {
 	t.Parallel()
 
 	target := &REST[empty]{
-		def: &discordgo.ApplicationCommand{},
+		def:  &discordgo.ApplicationCommand{},
+		resp: responseStub,
 	}
 
 	if target.Data() == nil {
@@ -89,6 +84,7 @@ func TestHandlerWhenCallFails(t *testing.T) {
 		formatter: func(payload empty) string {
 			return tstMessage
 		},
+		resp: responseStub,
 	}
 
 	err := target.Handle(&discordgo.Session{}, cmdInter)
@@ -123,6 +119,7 @@ func TestHandler(t *testing.T) {
 		formatter: func(payload empty) string {
 			return tstMessage
 		},
+		resp: responseStub,
 	}
 
 	err := target.Handle(&discordgo.Session{}, cmdInter)
@@ -135,7 +132,7 @@ func TestHandler(t *testing.T) {
 func TestCreateResponse(t *testing.T) {
 	t.Parallel()
 
-	got := createReponse(tstMessage)
+	got := createResponse(tstMessage)
 
 	if got.Data.Content != tstMessage {
 		t.Errorf("want %q, got %q", tstMessage, got.Data.Content)
@@ -152,4 +149,8 @@ func newTestClient(fn RoundTripFunc) *http.Client {
 	return &http.Client{
 		Transport: RoundTripFunc(fn),
 	}
+}
+
+func responseStub(sess *discordgo.Session, inter *discordgo.Interaction, resp *discordgo.InteractionResponse) error {
+	return nil
 }

@@ -29,7 +29,7 @@ spec:
       containers:
         - name: resonator-bot
           image: ghcr.io/loghinalexandru/resonator:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           env:
             - name: BOT_TOKEN
               value: ""

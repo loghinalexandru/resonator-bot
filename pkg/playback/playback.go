@@ -8,7 +8,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/jonas747/dca"
-	"github.com/loghinalexandru/resonator/pkg/audio"
+	"github.com/loghinalexandru/resonator/pkg/provider"
 )
 
 const (
@@ -22,27 +22,54 @@ const (
 var (
 	ErrFileHandler = errors.New("nil file handler")
 	ErrTimeout     = errors.New("opus frame timeout")
-	ErrHttpClient  = errors.New("missing http client")
 	ErrAudioSource = errors.New("missing audio source")
-	voice          = discordgoVoice
-	guild          = discordgoGuild
-	defferResponse = discordgoInteractionResp
-	respond        = discordgoInteractionEdit
 )
 
-type playbackOpt func(*Playback) error
+type Opt func(*Playback) error
 
-type Playback struct {
-	src     audio.Provider
-	storage *sync.Map
-	def     *discordgo.ApplicationCommand
+type voice func(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error)
+type guild func(sess *discordgo.Session, inter *discordgo.InteractionCreate) (*discordgo.Guild, error)
+type interactionResp func(session *discordgo.Session, interaction *discordgo.InteractionCreate) error
+type interactionEdit func(session *discordgo.Session, interaction *discordgo.InteractionCreate, msg string) error
+
+type Source interface {
+	Fetch(path string) (io.ReadCloser, error)
 }
 
-func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...playbackOpt) (*Playback, error) {
+type Playback struct {
+	src       Source
+	storage   *sync.Map
+	def       *discordgo.ApplicationCommand
+	voiceFunc voice
+	guildFunc guild
+	respFunc  interactionResp
+	editFunc  interactionEdit
+}
+
+func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...Opt) (*Playback, error) {
+	return newInternal(syncMap, definition, discordgoVoice, discordgoGuild, discordgoInteractionResp, discordgoInteractionEdit, opts...)
+}
+
+func WithSource(provider Source) Opt {
+	return func(p *Playback) error {
+		if provider == nil {
+			return ErrAudioSource
+		}
+
+		p.src = provider
+		return nil
+	}
+}
+
+func newInternal(syncMap *sync.Map, definition *discordgo.ApplicationCommand, voice voice, guild guild, resp interactionResp, edit interactionEdit, opts ...Opt) (*Playback, error) {
 	result := &Playback{
-		def:     definition,
-		src:     audio.NewLocal(),
-		storage: syncMap,
+		def:       definition,
+		src:       &provider.LocalProvider{},
+		storage:   syncMap,
+		voiceFunc: voice,
+		guildFunc: guild,
+		respFunc:  resp,
+		editFunc:  edit,
 	}
 
 	for _, opt := range opts {
@@ -55,35 +82,24 @@ func New(syncMap *sync.Map, definition *discordgo.ApplicationCommand, opts ...pl
 	return result, nil
 }
 
-func WithSource(provider audio.Provider) playbackOpt {
-	return func(p *Playback) error {
-		if provider == nil {
-			return ErrAudioSource
-		}
-
-		p.src = provider
-		return nil
-	}
-}
-
-func (cmd *Playback) Data() *discordgo.ApplicationCommand {
-	return cmd.def
+func (command *Playback) Data() *discordgo.ApplicationCommand {
+	return command.def
 }
 
 func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.InteractionCreate) (err error) {
-	err = defferResponse(sess, inter)
+	err = command.respFunc(sess, inter)
 
 	if err != nil {
 		return err
 	}
 
-	guild, _ := guild(sess, inter)
+	guild, _ := command.guildFunc(sess, inter)
 	entry, _ := command.storage.LoadOrStore(guild.ID, &sync.Mutex{})
 	mtx := entry.(*sync.Mutex)
 	ok := mtx.TryLock()
 
 	if !ok {
-		err = respond(sess, inter, msgConcurrentPlayback)
+		err = command.editFunc(sess, inter, msgConcurrentPlayback)
 		if err != nil {
 			return err
 		}
@@ -98,19 +114,19 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 	if !exists || inter.Member.User.ID != botvc.UserID {
 		for _, vc := range guild.VoiceStates {
 			if inter.Member.User.ID == vc.UserID {
-				botvc, err = voice(sess, guild.ID, vc.ChannelID, false, true)
+				botvc, err = command.voiceFunc(sess, guild.ID, vc.ChannelID, false, true)
 			}
 		}
 	}
 
 	if botvc == nil || err != nil {
-		return errors.Join(err, respond(sess, inter, msgMissingVoiceChannel))
+		return errors.Join(err, command.editFunc(sess, inter, msgMissingVoiceChannel))
 	}
 
 	err = botvc.Speaking(true)
 
 	if err != nil {
-		return errors.Join(err, respond(sess, inter, msgErrorOnSpeak))
+		return errors.Join(err, command.editFunc(sess, inter, msgErrorOnSpeak))
 	}
 
 	defer func() {
@@ -118,18 +134,18 @@ func (command *Playback) Handle(sess *discordgo.Session, inter *discordgo.Intera
 	}()
 
 	userOpt := inter.ApplicationCommandData().Options[0].Value.(string)
-	audio, err := command.src.Audio(userOpt)
+	rawAudio, err := command.src.Fetch(userOpt)
 
 	if err != nil {
-		return errors.Join(err, respond(sess, inter, msgMissingAudio))
+		return errors.Join(err, command.editFunc(sess, inter, msgMissingAudio))
 	}
 
-	err = respond(sess, inter, msgSuccess)
+	err = command.editFunc(sess, inter, msgSuccess)
 	if err != nil {
 		return err
 	}
 
-	err = playSound(botvc.OpusSend, audio)
+	err = playSound(botvc.OpusSend, rawAudio)
 	if err != nil {
 		return err
 	}
@@ -164,7 +180,6 @@ func playSound(soundBuff chan<- []byte, fh io.ReadCloser) error {
 	return nil
 }
 
-// Seam functions for testing purposes
 func discordgoVoice(sess *discordgo.Session, guildID, voiceID string, mute, deaf bool) (*discordgo.VoiceConnection, error) {
 	return sess.ChannelVoiceJoin(guildID, voiceID, mute, deaf)
 }

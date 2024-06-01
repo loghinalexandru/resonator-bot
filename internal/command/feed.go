@@ -3,8 +3,8 @@ package command
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/loghinalexandru/resonator/internal/bot"
-	"github.com/loghinalexandru/resonator/pkg/audio"
 	"github.com/loghinalexandru/resonator/pkg/playback"
+	"github.com/loghinalexandru/resonator/pkg/provider"
 )
 
 const (
@@ -24,7 +24,7 @@ func newFeed(ctx *bot.Context) *playback.Playback {
 			},
 		},
 	},
-		playback.WithSource(audio.NewHTTP(ctx.SwearsAPI.String()+remotePath)),
+		playback.WithSource(provider.NewHTTP(ctx.SwearsAPI.String()+remotePath)),
 	)
 
 	if err != nil {
